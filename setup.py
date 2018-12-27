@@ -17,26 +17,22 @@ setup(
     author='Mendel Linux Software Team',
     author_email='support-aiyprojects@google.com',
     classifiers = [
-        # 3 -> Alpha
-        # 4 -> Beta
-        # 5 -> Production/Stable
         'Development Status :: 3 - Alpha',
-
         'Intended Audience :: Developers',
         'Topic :: Software Development',
-
+        'Topic :: Utilities',
         'License :: OSI Approved :: Apache License',
-
+        'Operating System :: POSIX',
         'Programming Language :: Python :: 3',
     ],
     keywords='embedded development',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     install_requires=[
         'zeroconf',
-        'paramiko'
+        'spur'
     ],
+    data_files=[('share/man/man1', ['man/mdt.1'])],
     package_data={
-        'default_mendel_ssh_key', [ 'data/mendel_ssh_id', 'data/mendel_ssh_id.pub' ],
     },
     entry_points={
         'console_script': [

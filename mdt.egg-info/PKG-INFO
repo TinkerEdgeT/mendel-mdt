@@ -1,0 +1,36 @@
+Metadata-Version: 1.1
+Name: mdt
+Version: 1.0
+Summary: A command-line tool to manage Mendel embedded systems
+Home-page: https://aiyprojects.googlesource.com/mdt.git
+Author: Mendel Linux Software Team
+Author-email: support-aiyprojects@google.com
+License: UNKNOWN
+Description-Content-Type: text/markdown
+Description: MDT - The Mendel Development Tool
+        =================================
+        
+        ## What is this?
+        
+        MDT is a simple tool to aid in working with single board computers that the
+        Mendel Linux distribution runs on. It consists of a whole bunch of pre-existing
+        open source tooling, coupled with some simple wrappers written in python to ease
+        their use.
+        
+        It also provides an easy way to interact with these boards without having to
+        fight with serial consoles, IP addresses, and other fiddly bits, reducing
+        barrier to entry when working with these boards.
+        
+        With minimal effort, MDT should also be portable to existing systems such as
+        Debian and Ubuntu, if needed. This, however, is out of the scope of this
+        project.
+        
+Keywords: embedded development
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development
+Classifier: Topic :: Utilities
+Classifier: License :: OSI Approved :: Apache License
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 3
