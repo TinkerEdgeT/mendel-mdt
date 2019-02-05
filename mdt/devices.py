@@ -11,20 +11,20 @@ class DevicesCommand:
         print('Devices found:')
         discoveries = self.discoverer.discoveries
         for host, address in discoveries.items():
-            print('%s\t\t%s' % (host, address))
+            print('{0}\t\t({1})'.format(host, address))
 
 class DevicesWaitCommand:
     def __init__(self):
-        self.discoverer = Discoverer()
+        self.found_devices = False
+        self.discoverer = Discoverer(self)
+
+    def add_device(self, hostname, address):
+        self.found_devices = True
+        self.hostname = hostname
+        self.address = address
 
     def run(self, args):
         print('Waiting for device...')
-        found_device = False
-        while True:
-            sleep(1)
-            discoveries = self.discoverer.discoveries
-            if discoveries:
-                break
-        print('Devices found:')
-        for host, address in self.discoverer.discoveries.items():
-            print('%s\t\t%s' % (host, address))
+        while not self.found_devices:
+            sleep(0.1)
+        print('Device found: {0} ({1})'.format(self.hostname, self.address))
