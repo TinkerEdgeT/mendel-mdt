@@ -29,14 +29,18 @@ COMMANDS = {
 
 
 def main():
-    if len(sys.argv) <= 1:
-        command = 'help'
-    else:
-        command = sys.argv[1].lower()
+    try:
+        if len(sys.argv) <= 1:
+            command = 'help'
+        else:
+            command = sys.argv[1].lower()
 
-    command = COMMANDS.get(command)
-    if command != None:
-        exit(command.run(sys.argv[1:]))
+        command = COMMANDS.get(command)
+        if command != None:
+            exit(command.run(sys.argv[1:]))
+    except KeyboardInterrupt:
+        print()
+        exit(1)
 
 
 if __name__ == '__main__':
