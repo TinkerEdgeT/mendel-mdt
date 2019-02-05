@@ -6,14 +6,14 @@ from config import Config
 class DevicesCommand:
     def __init__(self):
         self.discoverer = Discoverer()
-        self.devicename = Config().defaultDeviceName()
+        self.device = Config().preferredDevice()
 
     def run(self, args):
         sleep(1)
         print('Devices found:')
         discoveries = self.discoverer.discoveries
         for host, address in discoveries.items():
-            if self.devicename and host == self.devicename:
+            if self.device and host == self.device:
                 print('{0}\t\t({1},default)'.format(host, address))
             else:
                 print('{0}\t\t({1})'.format(host, address))

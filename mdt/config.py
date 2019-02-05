@@ -5,6 +5,9 @@ CONFIG_BASEDIR = os.path.join(os.path.expanduser("~"), ".config", "mdt")
 CONFIG_KEYSDIR = os.path.join(CONFIG_BASEDIR, "keys")
 CONFIG_ATTRDIR = os.path.join(CONFIG_BASEDIR, "attribs")
 
+DEFAULT_USERNAME = "mendel"
+DEFAULT_SSH_COMMAND = "ssh"
+
 class Config:
     def __init__(self):
         self.ensureConfigDirExists()
@@ -17,12 +20,13 @@ class Config:
         if not os.path.exists(CONFIG_ATTRDIR):
             os.makedirs(CONFIG_ATTRDIR, mode=0o700)
 
-    def getAttribute(self, name):
+    def getAttribute(self, name, default=None):
         path = os.path.join(CONFIG_ATTRDIR, name)
         if os.path.exists(path):
             with open(path, "r") as fp:
                 return fp.readline().rstrip()
-        return None
+
+        return default
 
     def setAttribute(self, name, value):
         path = os.path.join(CONFIG_ATTRDIR, name)
@@ -34,10 +38,20 @@ class Config:
         if os.path.exists(path):
             os.unlink(path)
 
-    def defaultDeviceName(self, devicename=None):
+    def preferredDevice(self, devicename=None):
         if not devicename:
-            return self.getAttribute("devicename")
-        self.setAttribute("devicename", devicename)
+            return self.getAttribute("preferred-device")
+        self.setAttribute("preferred-device", devicename)
+
+    def username(self, username=None):
+        if not username:
+            return self.getAttribute("username", DEFAULT_USERNAME)
+        self.setAttribute("username", username)
+
+    def sshCommand(self, command=None):
+        if not command:
+            return self.getAttribute("ssh-command", DEFAULT_SSH_COMMAND)
+        self.setAttribute("ssh-command", command)
 
     def getKey(self, keyname):
         path = os.path.join(CONFIG_KEYSDIR, keyname)
