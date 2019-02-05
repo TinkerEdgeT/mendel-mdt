@@ -1,30 +1,36 @@
 import sys
 import os
 
-CONFIG_DIR = os.path.join(os.path.expanduser("~"), ".config", "mdt")
+CONFIG_BASEDIR = os.path.join(os.path.expanduser("~"), ".config", "mdt")
+CONFIG_KEYSDIR = os.path.join(CONFIG_BASEDIR, "keys")
+CONFIG_ATTRDIR = os.path.join(CONFIG_BASEDIR, "attribs")
 
 class Config:
     def __init__(self):
         self.ensureConfigDirExists()
 
     def ensureConfigDirExists(self):
-        if not os.path.exists(CONFIG_DIR):
-            os.makedirs(CONFIG_DIR, mode=0o700)
+        if not os.path.exists(CONFIG_BASEDIR):
+            os.makedirs(CONFIG_BASEDIR, mode=0o700)
+        if not os.path.exists(CONFIG_KEYSDIR):
+            os.makedirs(CONFIG_KEYSDIR, mode=0o700)
+        if not os.path.exists(CONFIG_ATTRDIR):
+            os.makedirs(CONFIG_ATTRDIR, mode=0o700)
 
     def getAttribute(self, name):
-        path = os.path.join(CONFIG_DIR, name)
+        path = os.path.join(CONFIG_ATTRDIR, name)
         if os.path.exists(path):
             with open(path, "r") as fp:
                 return fp.readline().rstrip()
         return None
 
     def setAttribute(self, name, value):
-        path = os.path.join(CONFIG_DIR, name)
+        path = os.path.join(CONFIG_ATTRDIR, name)
         with open(path, "w") as fp:
             fp.write(value + "\n")
 
     def clearAttribute(self, name):
-        path = os.path.join(CONFIG_DIR, name)
+        path = os.path.join(CONFIG_ATTRDIR, name)
         if os.path.exists(path):
             os.unlink(path)
 
@@ -32,6 +38,19 @@ class Config:
         if not devicename:
             return self.getAttribute("devicename")
         self.setAttribute("devicename", devicename)
+
+    def getKey(self, keyname):
+        path = os.path.join(CONFIG_KEYSDIR, keyname)
+        if os.path.exists(path):
+            with open(path, "r") as fp:
+                return fp.read()
+
+    def privateKey(self):
+        return getKey("mdt")
+
+    def publicKey(self):
+        return getKey("mdt.pub")
+
 
 class Get:
     def __init__(self):
@@ -41,6 +60,7 @@ class Get:
         if args:
             print("{0}: {1}".format(args[1], self.config.getAttribute(args[1])))
 
+
 class Set:
     def __init__(self):
         self.config = Config()
@@ -49,6 +69,7 @@ class Set:
         if args:
             self.config.setAttribute(args[1], args[2])
             print("Set {0} to {1}".format(args[1], args[2]))
+
 
 class Clear:
     def __init__(self):
