@@ -14,7 +14,7 @@ class DevicesCommand:
         discoveries = self.discoverer.discoveries
         for host, address in discoveries.items():
             if self.devicename and host == self.devicename:
-                print('{0}\t\t({1})\tdefault'.format(host, address))
+                print('{0}\t\t({1},default)'.format(host, address))
             else:
                 print('{0}\t\t({1})'.format(host, address))
 
