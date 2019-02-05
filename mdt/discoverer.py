@@ -1,6 +1,8 @@
 from typing import cast
 from zeroconf import ServiceBrowser, Zeroconf
 
+import socket
+
 class Discoverer:
     def __init__(self):
         self.zeroconf = Zeroconf()
