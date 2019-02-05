@@ -12,6 +12,7 @@ import sys
 import config
 import devices
 import keys
+import shell
 
 class HelpCommand:
     def run(self, args):
@@ -25,7 +26,8 @@ COMMANDS = {
     'get': config.Get(),
     'set': config.Set(),
     'clear': config.Clear(),
-    'genkey': keys.GenKey()
+    'genkey': keys.GenKey(),
+    'shell': shell.Shell(),
 }
 
 
