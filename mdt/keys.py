@@ -17,6 +17,9 @@ class Keystore:
         self.private_key = self.config.getKey("mdt")
         self.public_key = self.config.getKey("mdt.pub")
 
+    def privateKeyPath(self):
+        return os.path.join(config.CONFIG_KEYSDIR, "mdt")
+
     def generateKey(self):
         if platform.system() not in SUPPORTED_SYSTEMS:
             print('Sorry, MDT doesn\'t support generating SSH keys on platforms other than:')
@@ -27,7 +30,7 @@ class Keystore:
             subprocess.run([
                 "ssh-keygen",
                 "-f",
-                os.path.join(config.CONFIG_KEYSDIR, "mdt"),
+                self.privateKeyPath(),
                 "-P",
                 ""
             ], check=True)
@@ -38,6 +41,9 @@ class Keystore:
             print('Couldn\'t generate SSH keys.')
             print('ssh-keygen failed with error code {0}'.format(e.returncode))
             return False
+
+        self.private_key = self.config.getKey("mdt")
+        self.public_key = self.config.getKey("mdt.pub")
 
         return True
 
