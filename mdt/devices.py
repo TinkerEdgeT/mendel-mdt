@@ -1,17 +1,22 @@
 from time import sleep
 
 from discoverer import Discoverer
+from config import Config
 
 class DevicesCommand:
     def __init__(self):
         self.discoverer = Discoverer()
+        self.devicename = Config().defaultDeviceName()
 
     def run(self, args):
         sleep(1)
         print('Devices found:')
         discoveries = self.discoverer.discoveries
         for host, address in discoveries.items():
-            print('{0}\t\t({1})'.format(host, address))
+            if self.devicename and host == self.devicename:
+                print('{0}\t\t({1})\tdefault'.format(host, address))
+            else:
+                print('{0}\t\t({1})'.format(host, address))
 
 class DevicesWaitCommand:
     def __init__(self):

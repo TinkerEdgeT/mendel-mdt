@@ -9,6 +9,7 @@ the appropriate command.
 import socket
 import sys
 
+import config
 import devices
 import keys
 
@@ -21,6 +22,9 @@ COMMANDS = {
     'help': HelpCommand(),
     'devices': devices.DevicesCommand(),
     'wait-for-device': devices.DevicesWaitCommand(),
+    'get': config.Get(),
+    'set': config.Set(),
+    'clear': config.Clear()
 }
 
 
