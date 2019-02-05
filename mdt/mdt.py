@@ -24,7 +24,8 @@ COMMANDS = {
     'wait-for-device': devices.DevicesWaitCommand(),
     'get': config.Get(),
     'set': config.Set(),
-    'clear': config.Clear()
+    'clear': config.Clear(),
+    'genkey': keys.GenKey()
 }
 
 
