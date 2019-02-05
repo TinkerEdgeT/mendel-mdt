@@ -10,7 +10,7 @@ import socket
 import sys
 
 import devices
-
+import keys
 
 class HelpCommand:
     def run(self, args):
@@ -20,6 +20,7 @@ class HelpCommand:
 COMMANDS = {
     'help': HelpCommand(),
     'devices': devices.DevicesCommand(),
+    'wait-for-device': devices.DevicesWaitCommand(),
 }
 
 
