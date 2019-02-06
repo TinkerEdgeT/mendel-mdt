@@ -1,5 +1,6 @@
-import sys
 import os
+import sys
+
 
 CONFIG_BASEDIR = os.path.join(os.path.expanduser("~"), ".config", "mdt")
 CONFIG_ATTRDIR = os.path.join(CONFIG_BASEDIR, "attribs")
@@ -7,6 +8,7 @@ CONFIG_ATTRDIR = os.path.join(CONFIG_BASEDIR, "attribs")
 DEFAULT_USERNAME = "mendel"
 DEFAULT_PASSWORD = "mendel"
 DEFAULT_SSH_COMMAND = "ssh"
+
 
 class Config:
     def __init__(self):

@@ -1,10 +1,10 @@
 from time import sleep
 
-import platform
-import subprocess
 import os
-import socket
+import platform
 import select
+import socket
+import subprocess
 import sys
 import termios
 import tty
@@ -12,16 +12,19 @@ import tty
 import paramiko
 from paramiko.ssh_exception import AuthenticationException, SSHException
 
-import discoverer
-import config
-import console
-import keys
+from mdt import discoverer
+from mdt import config
+from mdt import console
+from mdt import keys
+
 
 class KeyPushError(Exception):
     pass
 
+
 class DefaultLoginError(Exception):
     pass
+
 
 class SshClient:
     def __init__(self, device, address):

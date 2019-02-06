@@ -1,10 +1,10 @@
-import platform
-import threading
-import queue
 import os
-import socket
+import platform
+import queue
 import select
+import socket
 import sys
+import threading
 
 
 class ConnectionClosedError(Exception):

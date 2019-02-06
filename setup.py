@@ -16,6 +16,7 @@ setup(
     url='https://aiyprojects.googlesource.com/mdt.git',
     author='Mendel Linux Software Team',
     author_email='support-aiyprojects@google.com',
+    license='Apache 2',
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
@@ -27,6 +28,7 @@ setup(
     ],
     keywords='embedded development',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    python_requires='>=3.5.0',
     install_requires=[
         'zeroconf',
         'paramiko'
@@ -35,8 +37,8 @@ setup(
     package_data={
     },
     entry_points={
-        'console_script': [
-            'mdt=mdt:main',
+        'console_scripts': [
+            'mdt=mdt.main:main',
         ],
     },
 )

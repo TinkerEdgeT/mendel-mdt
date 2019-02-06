@@ -1,7 +1,8 @@
 from time import sleep
 
-from discoverer import Discoverer
-from config import Config
+from mdt.discoverer import Discoverer
+from mdt.config import Config
+
 
 class DevicesCommand:
     def __init__(self):
@@ -17,6 +18,7 @@ class DevicesCommand:
                 print('{0}\t\t({1},default)'.format(host, address))
             else:
                 print('{0}\t\t({1})'.format(host, address))
+
 
 class DevicesWaitCommand:
     def __init__(self):

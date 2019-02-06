@@ -3,6 +3,7 @@ from zeroconf import ServiceBrowser, Zeroconf
 
 import socket
 
+
 class Discoverer:
     def __init__(self, listener = None):
         self.zeroconf = Zeroconf()

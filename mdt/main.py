@@ -9,10 +9,10 @@ the appropriate command.
 import socket
 import sys
 
-import config
-import devices
-import keys
-import shell
+from mdt import config
+from mdt import devices
+from mdt import keys
+from mdt import shell
 
 
 class HelpCommand:

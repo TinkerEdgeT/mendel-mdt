@@ -1,3 +1,0 @@
-[console_script]
-mdt = mdt:main
-

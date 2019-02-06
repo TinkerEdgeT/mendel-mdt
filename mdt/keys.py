@@ -1,11 +1,12 @@
+import os
 import platform
 import subprocess
-import os
 
 import paramiko
 from paramiko.ssh_exception import SSHException, PasswordRequiredException
 
-import config
+from mdt import config
+
 
 SUPPORTED_SYSTEMS = [
     'Linux',
