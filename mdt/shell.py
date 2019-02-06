@@ -14,6 +14,7 @@ from paramiko.ssh_exception import AuthenticationException, SSHException
 
 import discoverer
 import config
+import console
 import keys
 
 class KeyPushError(Exception):
@@ -136,10 +137,12 @@ class Shell:
                 sleep(0.1)
 
         print('Connecting to {0} at {1}'.format(self.device, self.address))
-        client = SshClient(self.device, self.address)
 
         try:
+            client = SshClient(self.device, self.address)
             channel = client.openShell()
+            cons = console.Console(channel, sys.stdin)
+            cons.run()
         except KeyPushError as e:
             print("Unable to push keys to the device: {0}".format(e))
             return 1
@@ -152,32 +155,11 @@ class Shell:
         except socket.error as e:
             print("Couldn't establish ssh connection to device: {0}".format(e))
             return 1
-
-        localtty = termios.tcgetattr(sys.stdin)
-        try:
-            tty.setraw(sys.stdin.fileno())
-            tty.setcbreak(sys.stdin.fileno())
-            channel.settimeout(0)
-
-            while True:
-                read, write, exception = select.select([channel, sys.stdin], [], [])
-
-                if channel in read:
-                    try:
-                        data = channel.recv(256)
-                        if len(data) == 0:
-                            sys.stdout.write("Connection to {0} at {1} closed.\r\n".format(self.device, self.address))
-                            break
-                        sys.stdout.write(data.decode("utf-8", errors="ignore"))
-                        sys.stdout.flush()
-                    except socket.timeout:
-                        sys.stdout.write("Connection to {0} at {1} closed: socket timeout\r\n".format(self.device, self.address))
-                        break
-                if sys.stdin in read:
-                    data = sys.stdin.read(1)
-                    if len(data) == 0:
-                        break
-                    channel.send(data)
+        except console.SocketTimeoutError as e:
+            print("Connection to {0} at {1} closed: socket timeout".format(self.device, self.address))
+            return 1
+        except console.ConnectionClosedError as e:
+            print("Connection to {0} at {1} closed".format(self.device, self.address))
+            return 0
         finally:
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, localtty)
             client.close()
