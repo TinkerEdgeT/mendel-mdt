@@ -18,6 +18,7 @@ from mdt import console
 from mdt import keys
 
 
+
 class KeyPushError(Exception):
     pass
 
@@ -112,7 +113,38 @@ class SshClient:
         self.client.close()
 
 
-class Shell:
+class ShellCommand:
+    '''Usage: mdt shell [<devicename>]
+
+Opens an interactive shell to either your preferred device, the given
+devicename, or to the first device found.
+
+Variables used:
+    preferred-device    - set this to your preferred device name to connect
+                          to by default if no <devicename> is provided on the
+                          command line.
+    username            - set this to the username that should be used to
+                          connect to a device with. Defaults to 'mendel'.
+    password            - set this to the password to use to login to a new
+                          device with. Defaults to 'mendel'. Only used
+                          during the initial setup phase of pushing an SSH
+                          key to the board.
+
+If no SSH key is available on disk (ie: you didn't run genkey before running
+shell), this will implicitly run genkey for you. Additionally, shell will
+attempt to connect to a device by doing the following:
+
+  1. Attempt a connection using your SSH key only, with no password.
+  2. If the connection attempt failed due to authentication, will
+     attempt to push the key to the device by using the default
+     login credentials in the 'username' and 'password' variables.
+  3. Installs your SSH key to the device after logging in.
+  4. Disconnects and reconnects using the SSH key.
+
+Note: this will not return the exit code of the shell executed on the device.
+If you need automation, use 'mdt run' instead.
+'''
+
     def __init__(self):
         self.config = config.Config()
         self.discoverer = discoverer.Discoverer(self)

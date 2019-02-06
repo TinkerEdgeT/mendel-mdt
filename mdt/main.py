@@ -16,6 +16,12 @@ from mdt import shell
 
 
 class HelpCommand:
+    '''Usage: mdt help [<subcommand>]
+
+Gets additional information about a given subcommand, or returns a summary
+of subcommands available.
+'''
+
     def run(self, args):
         if len(args) <= 1:
             print('Usage: mdt <subcommand> [<options>]')
@@ -34,7 +40,7 @@ class HelpCommand:
             print()
             return 1
 
-        subcommand = args[1]
+        subcommand = args[1].lower()
         command = COMMANDS[subcommand]
         if command.__doc__:
             print(command.__doc__)
@@ -47,11 +53,11 @@ COMMANDS = {
     'help': HelpCommand(),
     'devices': devices.DevicesCommand(),
     'wait-for-device': devices.DevicesWaitCommand(),
-    'get': config.Get(),
-    'set': config.Set(),
-    'clear': config.Clear(),
-    'genkey': keys.GenKey(),
-    'shell': shell.Shell(),
+    'get': config.GetCommand(),
+    'set': config.SetCommand(),
+    'clear': config.ClearCommand(),
+    'genkey': keys.GenKeyCommand(),
+    'shell': shell.ShellCommand(),
 }
 
 
@@ -61,6 +67,9 @@ def main():
             exit(COMMANDS['help'].run([]))
         else:
             command = sys.argv[1].lower()
+
+        if command == '--help':
+            command = 'help'
 
         if command in COMMANDS:
             command = COMMANDS[command]

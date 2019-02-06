@@ -59,26 +59,71 @@ class Config:
         self.setAttribute("ssh-command", command)
 
 
-class Get:
+class GetCommand:
+    '''Usage: mdt get [<variablename>]
+
+Returns the value currently set for a given variable name. Some useful
+variables are:
+
+    preferred-device    - set this to your preferred device name to default
+                          most commands to manipulating this specific device.
+    username            - set this to the username that should be used to
+                          connect to a device with. Defaults to 'mendel'.
+    password            - set this to the password to use to login to a new
+                          device with. Defaults to 'mendel'. Only used
+                          during the initial setup phase of pushing an SSH
+                          key to the board.
+
+If no variable name is provided, 'mdt get' will print out the list of all
+known stored variables and their values. Note: default values are not printed.
+'''
+
     def __init__(self):
         self.config = Config()
 
     def run(self, args):
-        if args:
+        if len(args) == 0:
+            pass
+        elif len(args) == 1:
             print("{0}: {1}".format(args[1], self.config.getAttribute(args[1])))
+        else:
+            print("Usage: mdt get [<variablename>]")
 
 
-class Set:
+class SetCommand:
+    '''Usage: mdt set <variablename> <value>
+
+Sets the value for a given variable name. Some useful variables are:
+
+    preferred-device    - set this to your preferred device name to default
+                          most commands to manipulating this specific device.
+    username            - set this to the username that should be used to
+                          connect to a device with. Defaults to 'mendel'.
+    password            - set this to the password to use to login to a new
+                          device with. Defaults to 'mendel'. Only used
+                          during the initial setup phase of pushing an SSH
+                          key to the board.
+
+Note that setting a variable to the empty string does not clear it back to
+the default value! Use 'mdt clear' for that.
+'''
     def __init__(self):
         self.config = Config()
 
     def run(self, args):
-        if args:
-            self.config.setAttribute(args[1], args[2])
-            print("Set {0} to {1}".format(args[1], args[2]))
+        if len(args) != 2:
+            print("Usage: mdt set <variablename> <value>")
+
+        self.config.setAttribute(args[1], args[2])
+        print("Set {0} to {1}".format(args[1], args[2]))
 
 
-class Clear:
+class ClearCommand:
+    '''Usage: mdt clear <variablename>
+
+Clears the value for a given variable name, resetting it back to its
+default value.
+'''
     def __init__(self):
         self.config = Config()
 

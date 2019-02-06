@@ -51,7 +51,15 @@ class Keystore:
         return self.pkey
 
 
-class GenKey:
+class GenKeyCommand:
+    '''Usage: mdt genkey
+
+Generates an SSH key and stores it to disk.
+
+Note that this does not prompt if you want to replace an already existing
+key and will happily overwrite without telling you!
+'''
+
     def run(self, args):
         if os.path.exists(KEYFILE_PATH):
             os.unlink(KEYFILE_PATH)
