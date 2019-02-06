@@ -29,7 +29,7 @@ setup(
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
     install_requires=[
         'zeroconf',
-        'spur'
+        'paramiko'
     ],
     data_files=[('share/man/man1', ['man/mdt.1'])],
     package_data={

@@ -15,7 +15,7 @@ Architecture: all
 Depends: ${python3:Depends},
          ${misc:Depends},
          python3-zeroconf,
-         python3-spur
+         python3-paramiko
 Description: simple tool to work with single board computers running Mendel Linux
  MDT is a simple tool to aid in working with single board computers that the
  Mendel Linux distribution runs on. It consists of a whole bunch of
