@@ -2,10 +2,10 @@ import sys
 import os
 
 CONFIG_BASEDIR = os.path.join(os.path.expanduser("~"), ".config", "mdt")
-CONFIG_KEYSDIR = os.path.join(CONFIG_BASEDIR, "keys")
 CONFIG_ATTRDIR = os.path.join(CONFIG_BASEDIR, "attribs")
 
 DEFAULT_USERNAME = "mendel"
+DEFAULT_PASSWORD = "mendel"
 DEFAULT_SSH_COMMAND = "ssh"
 
 class Config:
@@ -15,8 +15,6 @@ class Config:
     def ensureConfigDirExists(self):
         if not os.path.exists(CONFIG_BASEDIR):
             os.makedirs(CONFIG_BASEDIR, mode=0o700)
-        if not os.path.exists(CONFIG_KEYSDIR):
-            os.makedirs(CONFIG_KEYSDIR, mode=0o700)
         if not os.path.exists(CONFIG_ATTRDIR):
             os.makedirs(CONFIG_ATTRDIR, mode=0o700)
 
@@ -48,22 +46,15 @@ class Config:
             return self.getAttribute("username", DEFAULT_USERNAME)
         self.setAttribute("username", username)
 
+    def password(self, password=None):
+        if not password:
+            return self.getAttribute("password", DEFAULT_PASSWORD)
+        self.setAttribute("password", password)
+
     def sshCommand(self, command=None):
         if not command:
             return self.getAttribute("ssh-command", DEFAULT_SSH_COMMAND)
         self.setAttribute("ssh-command", command)
-
-    def getKey(self, keyname):
-        path = os.path.join(CONFIG_KEYSDIR, keyname)
-        if os.path.exists(path):
-            with open(path, "r") as fp:
-                return fp.read()
-
-    def privateKey(self):
-        return getKey("mdt")
-
-    def publicKey(self):
-        return getKey("mdt.pub")
 
 
 class Get:
