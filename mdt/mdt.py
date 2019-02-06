@@ -14,9 +14,33 @@ import devices
 import keys
 import shell
 
+
 class HelpCommand:
     def run(self, args):
-        print('implement me')
+        if len(args) <= 1:
+            print('Usage: mdt <subcommand> [<options>]')
+            print()
+            print('Where <subcommand> may be one of the following:')
+            print('    help            - this command, gets help on another command.')
+            print('    devices         - lists all detected devices.')
+            print('    wait-for-device - waits for a device to be discovered on the network')
+            print('    get             - gets an MDT variable value')
+            print('    set             - sets an MDT variable value')
+            print('    clear           - clears an MDT variable')
+            print('    genkey          - generates an SSH key for connecting to a device')
+            print('    shell           - opens an interactive shell to a device')
+            print()
+            print('Use "mdt help <subcommand>" for more details.')
+            print()
+            return 1
+
+        subcommand = args[1]
+        command = COMMANDS[subcommand]
+        if command.__doc__:
+            print(command.__doc__)
+        else:
+            print("No help is available for subcommand '{0}' "
+                  "-- please yell at the developers. :)".format(subcommand))
 
 
 COMMANDS = {
@@ -34,13 +58,17 @@ COMMANDS = {
 def main():
     try:
         if len(sys.argv) <= 1:
-            command = 'help'
+            exit(COMMANDS['help'].run([]))
         else:
             command = sys.argv[1].lower()
 
-        command = COMMANDS.get(command)
-        if command != None:
+        if command in COMMANDS:
+            command = COMMANDS[command]
             exit(command.run(sys.argv[1:]))
+
+        print("Unknown command '{0}': try 'mdt help'".format(command))
+        return 1
+
     except KeyboardInterrupt:
         print()
         exit(1)
