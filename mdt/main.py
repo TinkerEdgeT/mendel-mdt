@@ -11,6 +11,7 @@ import sys
 
 from mdt import config
 from mdt import devices
+from mdt import files
 from mdt import keys
 from mdt import shell
 
@@ -35,6 +36,10 @@ of subcommands available.
             print('    clear           - clears an MDT variable')
             print('    genkey          - generates an SSH key for connecting to a device')
             print('    shell           - opens an interactive shell to a device')
+            print('    exec            - runs a shell command and returns the output and the exit code')
+            print('    install         - installs a Debian package using mdt-install-package on the device')
+            print('    push            - pushes a file (or files) to the device')
+            print('    pull            - pulls a file (or files) from the device')
             print()
             print('Use "mdt help <subcommand>" for more details.')
             print()
@@ -50,14 +55,20 @@ of subcommands available.
 
 
 COMMANDS = {
-    'help': HelpCommand(),
-    'devices': devices.DevicesCommand(),
-    'wait-for-device': devices.DevicesWaitCommand(),
-    'get': config.GetCommand(),
-    'set': config.SetCommand(),
     'clear': config.ClearCommand(),
+    'devices': devices.DevicesCommand(),
+    'exec': shell.ExecCommand(),
     'genkey': keys.GenKeyCommand(),
+    'get': config.GetCommand(),
+    'help': HelpCommand(),
+    'install': files.InstallCommand(),
+    'pull': files.PullCommand(),
+    'push': files.PushCommand(),
+    'reboot': shell.RebootCommand(),
+    'reboot-bootloader': shell.RebootBootloaderCommand(),
+    'set': config.SetCommand(),
     'shell': shell.ShellCommand(),
+    'wait-for-device': devices.DevicesWaitCommand(),
 }
 
 

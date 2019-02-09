@@ -8,7 +8,8 @@ import threading
 
 
 class ConnectionClosedError(Exception):
-    pass
+    def __init__(self, exit_code=None):
+        self.exit_code = exit_code
 
 
 class SocketTimeoutError(Exception):
@@ -24,32 +25,46 @@ class PosixConsole:
         import termios
         import tty
 
-        localtty = termios.tcgetattr(sys.stdin)
+        localtty = None
         try:
-            tty.setraw(sys.stdin.fileno())
-            tty.setcbreak(sys.stdin.fileno())
+            localtty = termios.tcgetattr(self.inputfile)
+        except termios.error as e:
+            pass
+
+        try:
+            if localtty:
+                tty.setraw(self.inputfile.fileno())
+                tty.setcbreak(self.inputfile.fileno())
+
             self.channel.settimeout(0)
 
             while True:
-                read, write, exception = select.select([self.channel, sys.stdin], [], [])
+                read, write, exception = select.select([self.channel, self.inputfile], [], [])
 
                 if self.channel in read:
                     try:
                         data = self.channel.recv(256)
                         if len(data) == 0:
-                            raise ConnectionClosedError()
+                            exit_code = None
+                            if self.channel.exit_status_ready():
+                                exit_code = self.channel.recv_exit_status()
+                            raise ConnectionClosedError(exit_code=exit_code)
                         sys.stdout.write(data.decode("utf-8", errors="ignore"))
                         sys.stdout.flush()
                     except socket.timeout as e:
                         raise SocketTimeoutError(e)
 
-                if sys.stdin in read:
-                    data = sys.stdin.read(1)
+                if self.inputfile in read:
+                    data = self.inputfile.read(1)
                     if len(data) == 0:
-                        raise ConnectionClosedError()
+                        exit_code = None
+                        if self.channel.exit_status_ready():
+                            exit_code = self.channel.recv_exit_status()
+                        raise ConnectionClosedError(exit_code=exit_code)
                     self.channel.send(data)
         finally:
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, localtty)
+            if localtty:
+                termios.tcsetattr(self.inputfile, termios.TCSADRAIN, localtty)
 
 
 class WindowsConsole:
@@ -81,13 +96,19 @@ class WindowsConsole:
                 try:
                     data = self.channel.recv(256)
                     if len(data) == 0:
-                        self.queue.put((TYPE_REMOTE_CLOSED, None))
+                        exit_code = None
+                        if self.channel.exit_status_ready():
+                            exit_code = self.channel.recv_exit_status()
+                        self.queue.put((TYPE_REMOTE_CLOSED, exit_code))
                         break
                     data = data.decode("utf-8", errors="ignore")
                     self.queue.put((TYPE_TERMINAL_OUTPUT, data))
                 except socket.timeout:
                     self.queue.put((TYPE_SOCKET_TIMEOUT, None))
                     break
+
+            exit_status = self.channel.recv_exit_status()
+            self.queue.put((TYPE_EXIT_CODE, exit_status))
 
     def __init__(self, channel, inputfile):
         self.channel = channel
@@ -108,7 +129,7 @@ class WindowsConsole:
                 sys.stdout.write(data)
                 sys.stdout.flush()
             if dataType == TYPE_REMOTE_CLOSED:
-                raise ConnectionClosedError()
+                raise ConnectionClosedError(exit_code=data)
             if dataType == TYPE_SOCKET_TIMEOUT:
                 raise SocketTimeoutError()
 

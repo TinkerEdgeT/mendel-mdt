@@ -23,7 +23,6 @@ it does not require a running Avahi daemon.
 
     def run(self, args):
         sleep(1)
-        print('Devices found:')
         discoveries = self.discoverer.discoveries
         for host, address in discoveries.items():
             if self.device and host == self.device:

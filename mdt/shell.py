@@ -1,123 +1,15 @@
-from time import sleep
-
-import os
-import platform
-import select
-import socket
-import subprocess
 import sys
-import termios
-import tty
 
-import paramiko
-from paramiko.ssh_exception import AuthenticationException, SSHException
-
-from mdt import discoverer
-from mdt import config
+from mdt import command
 from mdt import console
-from mdt import keys
 
 
 
-class KeyPushError(Exception):
-    pass
+class ShellCommand(command.NetworkCommand):
+    '''Usage: mdt shell
 
-
-class DefaultLoginError(Exception):
-    pass
-
-
-class SshClient:
-    def __init__(self, device, address):
-        self.config = config.Config()
-        self.keystore = keys.Keystore()
-
-        self.device = device
-        self.address = address
-
-        self.username = self.config.username()
-        self.password = self.config.password()
-        self.ssh_command = self.config.sshCommand()
-
-        if not self.maybeGenerateSshKeys():
-            return False
-
-        self.client = paramiko.SSHClient()
-        self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
-
-    def _shouldPushKey(self):
-        try:
-            self.client.connect(
-                self.address,
-                username=self.username,
-                pkey=self.keystore.key(),
-                allow_agent=False,
-                look_for_keys=False,
-                compress=True)
-        except AuthenticationException as e:
-            return True
-        except (SSHException, socket.error) as e:
-            raise e
-        finally:
-            self.client.close()
-
-    def _pushKey(self):
-        try:
-            self.client.connect(
-                    self.address,
-                    username=self.username,
-                    password=self.password,
-                    allow_agent=False,
-                    look_for_keys=False,
-                    compress=True)
-        except AuthenticationException as e:
-            raise DefaultLoginError(e)
-        except (SSHException, socket.error) as e:
-            raise KeyPushError(e)
-        else:
-            public_key = self.keystore.key().get_base64()
-            self.client.exec_command('mkdir -p $HOME/.ssh')
-            self.client.exec_command(
-                'echo ssh-rsa {0} mdt@localhost >>$HOME/.ssh/authorized_keys'.format(public_key))
-        finally:
-            self.client.close()
-
-    def maybeGenerateSshKeys(self):
-        if not self.keystore.key():
-            print('Looks like you don\'t have a private key yet. Generating one.')
-
-            if not self.keystore.generateKey():
-                print('Unable to generate private key.')
-                return False
-
-        return True
-
-    def openShell(self):
-        term = os.getenv("TERM", default="vt100")
-        width, height = os.get_terminal_size()
-
-        if self._shouldPushKey():
-            print("Key not present on {0} -- pushing".format(self.device))
-            self._pushKey()
-
-        self.client.connect(
-            self.address,
-            username=self.username,
-            pkey=self.keystore.key(),
-            allow_agent=False,
-            look_for_keys=False,
-            compress=True)
-        return self.client.invoke_shell(term=term, width=width, height=height)
-
-    def close(self):
-        self.client.close()
-
-
-class ShellCommand:
-    '''Usage: mdt shell [<devicename>]
-
-Opens an interactive shell to either your preferred device, the given
-devicename, or to the first device found.
+Opens an interactive shell to either your preferred device or to the first
+device found.
 
 Variables used:
     preferred-device    - set this to your preferred device name to connect
@@ -140,61 +32,56 @@ attempt to connect to a device by doing the following:
      login credentials in the 'username' and 'password' variables.
   3. Installs your SSH key to the device after logging in.
   4. Disconnects and reconnects using the SSH key.
-
-Note: this will not return the exit code of the shell executed on the device.
-If you need automation, use 'mdt run' instead.
 '''
 
-    def __init__(self):
-        self.config = config.Config()
-        self.discoverer = discoverer.Discoverer(self)
-        self.device = self.config.preferredDevice()
-        self.address = None
+    def runWithClient(self, client, args):
+        channel = client.openShell()
+        cons = console.Console(channel, sys.stdin)
+        return cons.run()
 
-    def add_device(self, hostname, address):
-        if not self.device:
-            self.device = hostname
-            self.address = address
-        elif self.device == hostname:
-            self.address = address
 
-    def run(self, args):
-        if len(args) > 1:
-            self.device = args[1]
+class ExecCommand(command.NetworkCommand):
+    '''Usage: mdt exec [<shell-command...>]
 
-        if not self.address:
-            if self.device:
-                print('Waiting for device {0}...'.format(self.device))
-            else:
-                print('Waiting for a device...')
+Opens a non-interactive shell to either your preferred device or to the first
+device found.
 
-            while not self.address:
-                sleep(0.1)
+Variables used:
+    preferred-device    - set this to your preferred device name to connect
+                          to by default if no <devicename> is provided on the
+                          command line.
+    username            - set this to the username that should be used to
+                          connect to a device with. Defaults to 'mendel'.
+    password            - set this to the password to use to login to a new
+                          device with. Defaults to 'mendel'. Only used
+                          during the initial setup phase of pushing an SSH
+                          key to the board.
 
-        print('Connecting to {0} at {1}'.format(self.device, self.address))
+If no SSH key is available on disk (ie: you didn't run genkey before running
+shell), this will implicitly run genkey for you. Additionally, shell will
+attempt to connect to a device by doing the following:
 
-        try:
-            client = SshClient(self.device, self.address)
-            channel = client.openShell()
-            cons = console.Console(channel, sys.stdin)
-            cons.run()
-        except KeyPushError as e:
-            print("Unable to push keys to the device: {0}".format(e))
-            return 1
-        except DefaultLoginError as e:
-            print("Can't login using default credentials: {0}".format(e))
-            return 1
-        except SSHException as e:
-            print("Couldn't establish ssh connection to device: {0}".format(e))
-            return 1
-        except socket.error as e:
-            print("Couldn't establish ssh connection to device: {0}".format(e))
-            return 1
-        except console.SocketTimeoutError as e:
-            print("Connection to {0} at {1} closed: socket timeout".format(self.device, self.address))
-            return 1
-        except console.ConnectionClosedError as e:
-            print("Connection to {0} at {1} closed".format(self.device, self.address))
-            return 0
-        finally:
-            client.close()
+  1. Attempt a connection using your SSH key only, with no password.
+  2. If the connection attempt failed due to authentication, will
+     attempt to push the key to the device by using the default
+     login credentials in the 'username' and 'password' variables.
+  3. Installs your SSH key to the device after logging in.
+  4. Disconnects and reconnects using the SSH key.
+'''
+    def runWithClient(self, client, args):
+        channel = client.shellExec(' '.join(args[1:]))
+        cons = console.Console(channel, sys.stdin)
+        return cons.run()
+
+
+class RebootCommand(command.NetworkCommand):
+    def runWithClient(self, client, args):
+        channel = client.shellExec("sudo reboot")
+        cons = console.Console(channel, sys.stdin)
+        return cons.run()
+
+class RebootBootloaderCommand(command.NetworkCommand):
+    def runWithClient(self, client, args):
+        channel = client.shellExec("sudo reboot-bootloader")
+        cons = console.Console(channel, sys.stdin)
+        return cons.run()

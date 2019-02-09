@@ -111,8 +111,9 @@ the default value! Use 'mdt clear' for that.
         self.config = Config()
 
     def run(self, args):
-        if len(args) != 2:
+        if len(args) != 3:
             print("Usage: mdt set <variablename> <value>")
+            return 1
 
         self.config.setAttribute(args[1], args[2])
         print("Set {0} to {1}".format(args[1], args[2]))
