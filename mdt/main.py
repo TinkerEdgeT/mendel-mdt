@@ -9,6 +9,14 @@ the appropriate command.
 import socket
 import sys
 
+try:
+    import paramiko
+    import zeroconf
+except:
+    sys.stderr.write("Couldn't load paramiko or zeroconf -- perhaps you need to install them?\r\n")
+    sys.stderr.write("On Debian derivatives, 'apt-get install python3-paramiko python3-zeroconf'.\r\n")
+    sys.exit(1)
+
 from mdt import config
 from mdt import devices
 from mdt import files
