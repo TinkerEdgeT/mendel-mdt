@@ -9,7 +9,7 @@ class Discoverer:
         self.zeroconf = Zeroconf()
         self.discoveries = {}
         self.listener = listener
-        browser = ServiceBrowser(self.zeroconf, "_google_mdt._tcp.local.", self)
+        browser = ServiceBrowser(self.zeroconf, "_googlemdt._tcp.local.", self)
 
     def add_service(self, zeroconf, type, name):
         info = self.zeroconf.get_service_info(type, name)
