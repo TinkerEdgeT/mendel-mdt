@@ -42,22 +42,37 @@ class PosixConsole:
         import termios
         import tty
 
-        localtty = None
+        from termios import ISTRIP, INLCR, IGNCR, ICRNL, IXON, IXANY, IXOFF
+        from termios import ISIG, ICANON, ECHO, ECHOE, ECHOK, ECHONL
+        from termios import OPOST, VMIN, VTIME
+        from termios import TCSADRAIN
+
+        has_tty = False
+        old_tty_attrs = None
         try:
-            localtty = termios.tcgetattr(self.inputfile)
+            old_tty_attrs = termios.tcgetattr(self.inputfile)
+
+            (iflag, oflag, cflag, lflag, ispeed, ospeed, cc) = old_tty_attrs
+            iflag &= ~(ISTRIP | INLCR | IGNCR | ICRNL | IXON | IXANY | IXOFF)
+            lflag &= ~(ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHONL)
+            oflag &= ~OPOST;
+            cc[VMIN] = 1;
+            cc[VTIME] = 0;
+
+            newattrs = [iflag, oflag, cflag, lflag, ispeed, ospeed, cc]
+            termios.tcsetattr(self.inputfile, TCSADRAIN, newattrs)
+            has_tty = True
+
         except termios.error as e:
-            pass
+            has_tty = False
 
         try:
-            if localtty:
-                tty.setraw(self.inputfile.fileno())
-                tty.setcbreak(self.inputfile.fileno())
-
             self.channel.settimeout(0)
 
             while True:
                 read, write, exception = select.select([self.channel, self.inputfile], [], [])
 
+                # data from device to host
                 if self.channel in read:
                     try:
                         data = self.channel.recv(256)
@@ -71,8 +86,10 @@ class PosixConsole:
                     except socket.timeout as e:
                         raise SocketTimeoutError(e)
 
+                # data from host to device
                 if self.inputfile in read:
-                    data = self.inputfile.read(1)
+                    fd = self.inputfile.fileno()
+                    data = os.read(fd, 1)
                     if len(data) == 0:
                         exit_code = None
                         if self.channel.exit_status_ready():
@@ -80,8 +97,9 @@ class PosixConsole:
                         raise ConnectionClosedError(exit_code=exit_code)
                     self.channel.send(data)
         finally:
-            if localtty:
-                termios.tcsetattr(self.inputfile, termios.TCSADRAIN, localtty)
+            if has_tty:
+                localtty_attrs = termios.tcgetattr(self.inputfile)
+                termios.tcsetattr(self.inputfile, TCSADRAIN, old_tty_attrs)
 
 
 class WindowsConsole:
