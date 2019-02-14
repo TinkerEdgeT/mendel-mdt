@@ -55,9 +55,9 @@ class PosixConsole:
             (iflag, oflag, cflag, lflag, ispeed, ospeed, cc) = old_tty_attrs
             iflag &= ~(ISTRIP | INLCR | IGNCR | ICRNL | IXON | IXANY | IXOFF)
             lflag &= ~(ISIG | ICANON | ECHO | ECHOE | ECHOK | ECHONL)
-            oflag &= ~OPOST;
-            cc[VMIN] = 1;
-            cc[VTIME] = 0;
+            oflag &= ~OPOST
+            cc[VMIN] = 1
+            cc[VTIME] = 0
 
             newattrs = [iflag, oflag, cflag, lflag, ispeed, ospeed, cc]
             termios.tcsetattr(self.inputfile, TCSADRAIN, newattrs)
@@ -70,7 +70,9 @@ class PosixConsole:
             self.channel.settimeout(0)
 
             while True:
-                read, write, exception = select.select([self.channel, self.inputfile], [], [])
+                read, write, exception = select.select([self.channel,
+                                                        self.inputfile],
+                                                       [], [])
 
                 # data from device to host
                 if self.channel in read:
@@ -98,7 +100,6 @@ class PosixConsole:
                     self.channel.send(data)
         finally:
             if has_tty:
-                localtty_attrs = termios.tcgetattr(self.inputfile)
                 termios.tcsetattr(self.inputfile, TCSADRAIN, old_tty_attrs)
 
 

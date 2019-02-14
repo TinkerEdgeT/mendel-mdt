@@ -22,7 +22,7 @@ import socket
 
 
 class Discoverer:
-    def __init__(self, listener = None):
+    def __init__(self, listener=None):
         self.zeroconf = Zeroconf()
         self.discoveries = {}
         self.listener = listener
@@ -40,7 +40,8 @@ class Discoverer:
     def remove_service(self, zeroconf, type, name):
         info = self.zeroconf.get_service_info(type, name)
         if self.listener and hasattr(self.listener, "remove_device"):
-            self.listener.remove_device(info.server, self.discoveries[info.server])
+            self.listener.remove_device(info.server,
+                                        self.discoveries[info.server])
         del(self.discoveries[info.server])
 
     def stop(self):

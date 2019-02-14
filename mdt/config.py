@@ -102,7 +102,8 @@ known stored variables and their values. Note: default values are not printed.
         if len(args) == 0:
             pass
         elif len(args) == 1:
-            print("{0}: {1}".format(args[1], self.config.getAttribute(args[1])))
+            print("{0}: {1}".format(args[1],
+                                    self.config.getAttribute(args[1])))
         else:
             print("Usage: mdt get [<variablename>]")
 

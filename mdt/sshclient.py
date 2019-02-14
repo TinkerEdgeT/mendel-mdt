@@ -19,6 +19,7 @@ import os
 
 import paramiko
 from paramiko.ssh_exception import AuthenticationException, SSHException
+from paramiko.client import AutoAddPolicy
 
 from mdt import config
 from mdt import discoverer
@@ -50,7 +51,7 @@ class SshClient:
             return False
 
         self.client = paramiko.SSHClient()
-        self.client.set_missing_host_key_policy(paramiko.client.AutoAddPolicy())
+        self.client.set_missing_host_key_policy(AutoAddPolicy())
 
     def _shouldPushKey(self):
         try:
@@ -85,13 +86,15 @@ class SshClient:
             public_key = self.keystore.key().get_base64()
             self.client.exec_command('mkdir -p $HOME/.ssh')
             self.client.exec_command(
-                'echo ssh-rsa {0} mdt@localhost >>$HOME/.ssh/authorized_keys'.format(public_key))
+                'echo ssh-rsa {0} mdt@localhost '
+                '>>$HOME/.ssh/authorized_keys'.format(public_key))
         finally:
             self.client.close()
 
     def maybeGenerateSshKeys(self):
         if not self.keystore.key():
-            print('Looks like you don\'t have a private key yet. Generating one.')
+            print('Looks like you don\'t have a private key yet. '
+                  'Generating one.')
 
             if not self.keystore.generateKey():
                 print('Unable to generate private key.')

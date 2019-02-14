@@ -71,17 +71,20 @@ class NetworkCommand:
             print("Couldn't establish ssh connection to device: {0}".format(e))
             return 1
         except socket.error as e:
-            print("Couldn't establish ssh connection to device: socket error: {0}".format(e))
+            print("Couldn't establish ssh connection to device: "
+                  "socket error: {0}".format(e))
             return 1
         except console.SocketTimeoutError as e:
-            print("\r\nConnection to {0} at {1} closed: socket timeout".format(self.device, self.address))
+            print("\r\nConnection to {0} at {1} closed: "
+                  "socket timeout".format(self.device, self.address))
             return 1
         except console.ConnectionClosedError as e:
             if e.exit_code:
-                print("\r\nConnection to {0} at {1} closed "
-                      "with exit code {2}".format(self.device, self.address, e.exit_code))
+                print("\r\nConnection to {0} at {1} closed with exit code"
+                      "{2}".format(self.device, self.address, e.exit_code))
             else:
-                print("\r\nConnection to {0} at {1} closed".format(self.device, self.address))
+                print("\r\nConnection to {0} at {1} "
+                      "closed".format(self.device, self.address))
             return e.exit_code
         finally:
             if client:

@@ -36,10 +36,13 @@ def MakeProgressFunc(full_filename, width, char='>'):
         filename = full_filename
         if len(filename) > FILENAME_WIDTH:
             filename = filename[0:FILENAME_WIDTH - 3] + '...'
-        left = char * int(pcnt * width)
+        left = char * int(pcnt * width - 1)
         right = ' ' * int((1 - pcnt) * width)
         pcnt = '%3d' % (int(pcnt * 100))
-        sys.stdout.write('\r{0}% |{1}{2}| {3}'.format(pcnt, left, right, filename))
+        sys.stdout.write('\r{0}% |{1}{2}| {3}'.format(pcnt,
+                                                      left,
+                                                      right,
+                                                      filename))
         sys.stdout.flush()
 
     return closure
@@ -65,7 +68,9 @@ class InstallCommand(command.NetworkCommand):
         client.close()
         print()
 
-        channel = client.shellExec("sudo /usr/sbin/mdt-install-package {0}; rm -f {0}".format(remote_filename), allocPty=True)
+        channel = client.shellExec("sudo /usr/sbin/mdt-install-package {0}; "
+                                   "rm -f {0}".format(remote_filename),
+                                   allocPty=True)
         cons = console.Console(channel, sys.stdin)
         return cons.run()
 
@@ -121,7 +126,9 @@ class PullCommand(command.NetworkCommand):
             sftp = client.openSftp()
             for file in files_to_pull:
                 base_filename = os.path.basename(file)
-                sftp_callback = MakeProgressFunc(file, PROGRESS_WIDTH, char='<')
+                sftp_callback = MakeProgressFunc(file,
+                                                 PROGRESS_WIDTH,
+                                                 char='<')
                 destination_filename = os.path.join(destination, base_filename)
 
                 sftp_callback(0, 1)

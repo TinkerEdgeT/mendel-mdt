@@ -21,7 +21,6 @@ from mdt import command
 from mdt import console
 
 
-
 class ShellCommand(command.NetworkCommand):
     '''Usage: mdt shell
 
@@ -96,6 +95,7 @@ class RebootCommand(command.NetworkCommand):
         channel = client.shellExec("sudo reboot")
         cons = console.Console(channel, sys.stdin)
         return cons.run()
+
 
 class RebootBootloaderCommand(command.NetworkCommand):
     def runWithClient(self, client, args):

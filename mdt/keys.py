@@ -21,6 +21,7 @@ import subprocess
 
 import paramiko
 from paramiko.ssh_exception import SSHException, PasswordRequiredException
+from paramiko.rsakey import RSAKey
 
 from mdt import config
 
@@ -45,7 +46,7 @@ class Keystore:
             self.pkey = None
         else:
             try:
-                self.pkey = paramiko.rsakey.RSAKey.from_private_key_file(KEYFILE_PATH)
+                self.pkey = RSAKey.from_private_key_file(KEYFILE_PATH)
             except IOError as e:
                 print("Unable to read private key from file: {0}".format(e))
                 sys.exit(1)
@@ -54,7 +55,7 @@ class Keystore:
                 sys.exit(1)
 
     def generateKey(self):
-        self.pkey = paramiko.rsakey.RSAKey.generate(bits=4096)
+        self.pkey = RSAKey.generate(bits=4096)
 
         try:
             self.pkey.write_private_key_file(KEYFILE_PATH)
