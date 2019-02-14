@@ -26,7 +26,7 @@ class Discoverer:
         self.zeroconf = Zeroconf()
         self.discoveries = {}
         self.listener = listener
-        browser = ServiceBrowser(self.zeroconf, "_googlemdt._tcp.local.", self)
+        self.browser = ServiceBrowser(self.zeroconf, "_googlemdt._tcp.local.", self)
 
     def add_service(self, zeroconf, type, name):
         info = self.zeroconf.get_service_info(type, name)
@@ -42,3 +42,6 @@ class Discoverer:
         if self.listener and hasattr(self.listener, "remove_device"):
             self.listener.remove_device(info.server, self.discoveries[info.server])
         del(self.discoveries[info.server])
+
+    def stop(self):
+        self.browser.cancel()

@@ -55,6 +55,7 @@ class NetworkCommand:
             while not self.address:
                 sleep(0.1)
 
+        self.discoverer.stop()
         client = None
         try:
             print('Connecting to {0} at {1}'.format(self.device, self.address))
