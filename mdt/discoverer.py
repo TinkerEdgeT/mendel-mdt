@@ -42,7 +42,8 @@ class Discoverer:
         if self.listener and hasattr(self.listener, "remove_device"):
             self.listener.remove_device(info.server,
                                         self.discoveries[info.server])
-        del(self.discoveries[info.server])
+        if info.server in self.discoveries:
+            del(self.discoveries[info.server])
 
     def stop(self):
         self.browser.cancel()
