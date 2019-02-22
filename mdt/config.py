@@ -24,7 +24,7 @@ CONFIG_ATTRDIR = os.path.join(CONFIG_BASEDIR, "attribs")
 
 DEFAULT_USERNAME = "mendel"
 DEFAULT_PASSWORD = "mendel"
-DEFAULT_SSH_COMMAND = "ssh"
+DEFAULT_DISABLE_PASSWD_AUTH = "true"
 
 
 class Config:
@@ -70,10 +70,11 @@ class Config:
             return self.getAttribute("password", DEFAULT_PASSWORD)
         self.setAttribute("password", password)
 
-    def sshCommand(self, command=None):
-        if not command:
-            return self.getAttribute("ssh-command", DEFAULT_SSH_COMMAND)
-        self.setAttribute("ssh-command", command)
+    def shouldDisablePasswordAuth(self, disablePasswdAuth=None):
+        if disablePasswdAuth == None:
+            return self.getAttribute("disable-password-auth",
+                                     DEFAULT_DISABLE_PASSWD_AUTH)
+        self.setAttribute("disable-password-auth", disablePasswdAuth)
 
 
 class GetCommand:

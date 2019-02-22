@@ -35,6 +35,10 @@ class DefaultLoginError(Exception):
     pass
 
 
+class PasswordAuthDisableError(Exception):
+    pass
+
+
 class SshClient:
     def __init__(self, device, address):
         self.config = config.Config()
@@ -45,7 +49,6 @@ class SshClient:
 
         self.username = self.config.username()
         self.password = self.config.password()
-        self.ssh_command = self.config.sshCommand()
 
         if not self.maybeGenerateSshKeys():
             return False
@@ -88,6 +91,29 @@ class SshClient:
             self.client.exec_command(
                 'echo ssh-rsa {0} mdt@localhost '
                 '>>$HOME/.ssh/authorized_keys'.format(public_key))
+        finally:
+            self.client.close()
+
+        # Ensure the key we just pushed allows us to login
+        try:
+            self.client.connect(
+                self.address,
+                username=self.username,
+                pkey=self.keystore.key(),
+                allow_agent=False,
+                look_for_keys=False,
+                compress=True)
+
+            if self.config.shouldDisablePasswordAuth() == "true":
+                print("Key push successful: disabling password authentication")
+                self.client.exec_command(
+                    "sudo sed -e's/^#?PasswordAuthentication.*/PasswordAuthentication no/g' -i "
+                    "/etc/ssh/sshd_config")
+                self.client.exec_command('sudo systemctl restart ssh')
+        except AuthenticationException as e:
+            raise KeyPushError(e)
+        except (SSHException, socket.error) as e:
+            raise KeyPushError(e)
         finally:
             self.client.close()
 
