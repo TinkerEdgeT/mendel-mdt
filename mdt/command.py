@@ -80,7 +80,7 @@ class NetworkCommand:
             return 1
         except console.ConnectionClosedError as e:
             if e.exit_code:
-                print("\r\nConnection to {0} at {1} closed with exit code"
+                print("\r\nConnection to {0} at {1} closed with exit code "
                       "{2}".format(self.device, self.address, e.exit_code))
             else:
                 print("\r\nConnection to {0} at {1} "

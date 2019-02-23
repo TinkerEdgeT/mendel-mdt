@@ -32,17 +32,16 @@ FILENAME_WIDTH = 30
 
 def MakeProgressFunc(full_filename, width, char='>'):
     def closure(bytes_xferred, total_bytes):
-        pcnt = bytes_xferred / total_bytes
         filename = full_filename
         if len(filename) > FILENAME_WIDTH:
             filename = filename[0:FILENAME_WIDTH - 3] + '...'
-        left = char * int(pcnt * width - 1)
-        right = ' ' * int((1 - pcnt) * width)
+
+        pcnt = bytes_xferred / total_bytes
+        left = char * round(pcnt * width)
+        right = ' ' * round((1 - pcnt) * width)
         pcnt = '%3d' % (int(pcnt * 100))
-        sys.stdout.write('\r{0}% |{1}{2}| {3}'.format(pcnt,
-                                                      left,
-                                                      right,
-                                                      filename))
+        sys.stdout.write('\r{0}% |{1}{2}| {3}'.format(
+            pcnt, left, right, filename))
         sys.stdout.flush()
 
     return closure
