@@ -49,6 +49,8 @@ class PosixConsole:
 
         has_tty = False
         old_tty_attrs = None
+        escape_level = 0
+
         try:
             old_tty_attrs = termios.tcgetattr(self.inputfile)
 
@@ -92,11 +94,23 @@ class PosixConsole:
                 if self.inputfile in read:
                     fd = self.inputfile.fileno()
                     data = os.read(fd, 1)
+
+                    if escape_level == 0 and data == b'\r':
+                        escape_level += 1
+                    elif escape_level == 1 and data == b'~':
+                        escape_level += 1
+                        continue
+                    elif escape_level == 2 and data == b'.':
+                        raise ConnectionClosedError(exit_code=0)
+                    else:
+                        escape_level = 0
+
                     if len(data) == 0:
                         exit_code = None
                         if self.channel.exit_status_ready():
                             exit_code = self.channel.recv_exit_status()
                         raise ConnectionClosedError(exit_code=exit_code)
+
                     self.channel.send(data)
         finally:
             if has_tty:
@@ -156,10 +170,22 @@ class WindowsConsole:
         self.inputThread.start()
         self.outputThread.start()
 
+        escape_level = 0
+
         while True:
             dataType, data = self.queue.get()
 
             if dataType == TYPE_KEYBOARD_INPUT:
+                if escape_level == 0 and data == b'\r':
+                    escape_level += 1
+                elif escape_level == 1 and data == b'~':
+                    escape_level += 1
+                    continue
+                elif escape_level == 2 and data == b'.':
+                    raise ConnectionClosedError(exit_code=0)
+                else:
+                    escape_level = 0
+
                 channel.send(data)
             if dataType == TYPE_TERMINAL_OUTPUT:
                 sys.stdout.write(data)
