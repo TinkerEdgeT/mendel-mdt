@@ -16,6 +16,7 @@ limitations under the License.
 
 
 import os
+import http.client
 
 import paramiko
 from paramiko.ssh_exception import AuthenticationException, SSHException
@@ -25,6 +26,9 @@ from mdt import config
 from mdt import discoverer
 from mdt import keys
 from mdt import sshclient
+
+
+KEYMASTER_PORT = 41337
 
 
 class KeyPushError(Exception):
@@ -73,26 +77,16 @@ class SshClient:
             self.client.close()
 
     def _pushKey(self):
+        connection = http.client.HTTPConnection(self.address, KEYMASTER_PORT)
         try:
-            self.client.connect(
-                    self.address,
-                    username=self.username,
-                    password=self.password,
-                    allow_agent=False,
-                    look_for_keys=False,
-                    compress=True)
-        except AuthenticationException as e:
-            raise DefaultLoginError(e)
-        except (SSHException, socket.error) as e:
-            raise KeyPushError(e)
-        else:
             public_key = self.keystore.key().get_base64()
-            self.client.exec_command('mkdir -p $HOME/.ssh')
-            self.client.exec_command(
-                'echo ssh-rsa {0} mdt@localhost '
-                '>>$HOME/.ssh/authorized_keys'.format(public_key))
+            authorized_keys_line = 'ssh-rsa {0} mdt\n'.format(public_key)
+            connection.request('PUT', '/', authorized_keys_line)
+            response = connection.getresponse()
+        except ConnectionError as e:
+            raise KeyPushError(e)
         finally:
-            self.client.close()
+            connection.close()
 
         # Ensure the key we just pushed allows us to login
         try:
