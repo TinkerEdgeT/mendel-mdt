@@ -81,7 +81,7 @@ class GetCommand:
     '''Usage: mdt get [<variablename>]
 
 Returns the value currently set for a given variable name. Some useful
-variables are:
+nvariables are:
 
     preferred-device    - set this to your preferred device name to default
                           most commands to manipulating this specific device.
@@ -100,10 +100,12 @@ known stored variables and their values. Note: default values are not printed.
         self.config = Config()
 
     def run(self, args):
-        if len(args) == 0:
-            pass
-        elif len(args) == 1:
-            print("{0}: {1}".format(args[1],
+        if len(args) == 2:
+            value = self.config.getAttribute(args[1])
+            if value == None:
+                print("{0} is unset".format(args[1]))
+            else:
+                print("{0} is {1}".format(args[1],
                                     self.config.getAttribute(args[1])))
         else:
             print("Usage: mdt get [<variablename>]")
