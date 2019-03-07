@@ -15,6 +15,7 @@ limitations under the License.
 '''
 
 
+import re
 import os
 import socket
 
@@ -26,6 +27,9 @@ from mdt import config
 from mdt import console
 from mdt import discoverer
 from mdt import sshclient
+
+
+IP_ADDR_REGEX = re.compile('[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}')
 
 
 class NetworkCommand:
@@ -45,6 +49,9 @@ class NetworkCommand:
     def run(self, args):
         if not self.preConnectRun(args):
             return 1
+
+        if self.device and IP_ADDR_REGEX.match(self.device):
+            self.address = self.device
 
         if not self.address:
             if self.device:
