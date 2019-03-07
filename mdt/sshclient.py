@@ -15,8 +15,10 @@ limitations under the License.
 '''
 
 
-import os
 import http.client
+import os
+import socket
+import time
 
 import paramiko
 from paramiko.ssh_exception import AuthenticationException, SSHException
@@ -76,17 +78,51 @@ class SshClient:
         finally:
             self.client.close()
 
-    def _pushKey(self):
+    def _generateAuthorizedKeysLine(self):
+        public_key = self.keystore.key().get_base64()
+        authorized_keys_line = 'ssh-rsa {0} mdt'.format(public_key)
+        return authorized_keys_line
+
+    def _pushKeyViaKeymaster(self):
         connection = http.client.HTTPConnection(self.address, KEYMASTER_PORT)
         try:
-            public_key = self.keystore.key().get_base64()
-            authorized_keys_line = 'ssh-rsa {0} mdt\n'.format(public_key)
-            connection.request('PUT', '/', authorized_keys_line)
+            key_line = self._generateAuthorizedKeysLine()
+            connection.request('PUT', '/', key_line + '\n')
             response = connection.getresponse()
         except ConnectionError as e:
             raise KeyPushError(e)
         finally:
             connection.close()
+
+    def _pushKeyViaDefaultLogin(self):
+        try:
+            self.client.connect(
+                    self.address,
+                    username=self.username,
+                    password=self.password,
+                    allow_agent=False,
+                    look_for_keys=False,
+                    compress=True)
+        except AuthenticationException as e:
+            raise DefaultLoginError(e)
+        except (SSHException, socket.error) as e:
+            raise KeyPushError(e)
+        else:
+            key_line = self._generateAuthorizedKeysLine()
+            self.client.exec_command('mkdir -p $HOME/.ssh')
+            self.client.exec_command(
+                'echo {0} >>$HOME/.ssh/authorized_keys'.format(key_line))
+        finally:
+            self.client.close()
+
+    def _pushKey(self):
+        try:
+            self._pushKeyViaKeymaster()
+        except KeyPushError as e:
+            print('Failed to push via keymaster -- attempting password login')
+            self._pushKeyViaDefaultLogin()
+
+        time.sleep(1)
 
         # Ensure the key we just pushed allows us to login
         try:
