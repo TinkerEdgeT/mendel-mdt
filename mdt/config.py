@@ -85,6 +85,8 @@ nvariables are:
 
     preferred-device    - set this to your preferred device name to default
                           most commands to manipulating this specific device.
+                          This can be set to an IPv4 address to bypass the mDNS
+                          lookup.
     username            - set this to the username that should be used to
                           connect to a device with. Defaults to 'mendel'.
     password            - set this to the password to use to login to a new
@@ -118,6 +120,8 @@ Sets the value for a given variable name. Some useful variables are:
 
     preferred-device    - set this to your preferred device name to default
                           most commands to manipulating this specific device.
+                          This can be set to an IPv4 address to bypass the mDNS
+                          lookup.
     username            - set this to the username that should be used to
                           connect to a device with. Defaults to 'mendel'.
     password            - set this to the password to use to login to a new

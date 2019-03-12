@@ -28,7 +28,8 @@ Returns a list of device names and IP addresses found on the local network
 segment. Also indicates if a given device is marked as your default.
 
 Variables used:
-   preferred-device: contains the device name you want as your default
+   preferred-device: contains the device name you want as your default.
+                     Can be set to an IPv4 address to bypass the mDNS lookup.
 
 Note: MDT uses a python implementation of mDNS ZeroConf for discovery, so
 it does not require a running Avahi daemon.
@@ -56,6 +57,7 @@ discovered on the local network segment.
 
 Variables used:
    preferred-device: contains the device name you want as your default
+                     Can be set to an IPv4 address to bypass the mDNS lookup.
 
 Note: if preferred-device is cleared, then this will return on the first
 available device found. Also, MDT uses a python implementation of mDNS

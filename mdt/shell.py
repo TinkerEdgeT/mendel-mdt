@@ -30,7 +30,8 @@ device found.
 Variables used:
     preferred-device    - set this to your preferred device name to connect
                           to by default if no <devicename> is provided on the
-                          command line.
+                          command line. Can be set to an IPv4 address to bypass
+                          the mDNS lookup.
     username            - set this to the username that should be used to
                           connect to a device with. Defaults to 'mendel'.
     password            - set this to the password to use to login to a new
@@ -65,7 +66,8 @@ device found.
 Variables used:
     preferred-device    - set this to your preferred device name to connect
                           to by default if no <devicename> is provided on the
-                          command line.
+                          command line. Can be set to an IPv4 address to bypass
+                          the mDNS lookup.
     username            - set this to the username that should be used to
                           connect to a device with. Defaults to 'mendel'.
     password            - set this to the password to use to login to a new

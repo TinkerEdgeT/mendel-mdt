@@ -48,6 +48,28 @@ def MakeProgressFunc(full_filename, width, char='>'):
 
 
 class InstallCommand(command.NetworkCommand):
+    '''Usage: mdt install <deb-package>
+
+Installs a given Debian package file to the connected device via
+mdt-install-package.
+
+Variables used:
+    preferred-device    - set this to your preferred device name to connect
+                          to by default if no <devicename> is provided on the
+                          command line. Can be set to an IPv4 address to bypass
+                          the mDNS lookup.
+    username            - set this to the username that should be used to
+                          connect to a device with. Defaults to 'mendel'.
+    password            - set this to the password to use to login to a new
+                          device with. Defaults to 'mendel'. Only used
+                          during the initial setup phase of pushing an SSH
+                          key to the board.
+
+Note: if the package provided has dependencies that are not already installed on
+the device, this will require internet connectivity to fetch and install those
+dependencies.
+'''
+
     def preConnectRun(self, args):
         if len(args) < 2:
             print("Usage: mdt install [<package-filename...>]")
@@ -75,9 +97,26 @@ class InstallCommand(command.NetworkCommand):
 
 
 class PushCommand(command.NetworkCommand):
+    '''Usage: mdt push <filename...> <remote-path>
+
+Variables used:
+    preferred-device    - set this to your preferred device name to connect
+                          to by default if no <devicename> is provided on the
+                          command line. Can be set to an IPv4 address to bypass
+                          the mDNS lookup.
+    username            - set this to the username that should be used to
+                          connect to a device with. Defaults to 'mendel'.
+    password            - set this to the password to use to login to a new
+                          device with. Defaults to 'mendel'. Only used
+                          during the initial setup phase of pushing an SSH
+                          key to the board.
+
+Pushes (copies) a local file or set of files to the remote device.
+'''
+
     def preConnectRun(self, args):
         if len(args) < 3:
-            print("Usage: mdt push <filename...> <destination-directory>")
+            print("Usage: mdt push <filename...> <remote-path>")
             return False
 
         for file in args[1:-1]:
@@ -110,6 +149,23 @@ class PushCommand(command.NetworkCommand):
 
 
 class PullCommand(command.NetworkCommand):
+    '''Usage: mdt pull [<filename...>]
+
+Variables used:
+    preferred-device    - set this to your preferred device name to connect
+                          to by default if no <devicename> is provided on the
+                          command line. Can be set to an IPv4 address to bypass
+                          the mDNS lookup.
+    username            - set this to the username that should be used to
+                          connect to a device with. Defaults to 'mendel'.
+    password            - set this to the password to use to login to a new
+                          device with. Defaults to 'mendel'. Only used
+                          during the initial setup phase of pushing an SSH
+                          key to the board.
+
+Pulls (copies) a set of files from the remote device to a local path.
+'''
+
     def preConnectRun(self, args):
         if len(args) < 3:
             print("Usage: mdt pull [<filename...>]")

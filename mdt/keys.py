@@ -75,7 +75,10 @@ class GenKeyCommand:
 Generates an SSH key and stores it to disk.
 
 Note that this does not prompt if you want to replace an already existing
-key and will happily overwrite without telling you!
+key and will happily overwrite without telling you! Also note, you should remove
+the keys previously stored on the device in $HOME/.ssh/authorized_keys and
+restart the mdt-keymaster service on the device to re-push any newly generated
+keys.
 '''
 
     def run(self, args):
