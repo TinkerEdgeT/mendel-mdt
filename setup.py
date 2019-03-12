@@ -15,7 +15,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://aiyprojects.googlesource.com/mdt.git',
     author='Mendel Linux Software Team',
-    author_email='support-aiyprojects@google.com',
+    author_email='coral-support@google.com',
     license='Apache 2',
     classifiers = [
         'Development Status :: 3 - Alpha',

@@ -1,6 +1,6 @@
 Source: mdt
 Section: python
-Maintainer: AIY Projects <support-aiyprojects@google.com>
+Maintainer: AIY Projects <coral-support@google.com>
 Build-Depends: debhelper,
                dh-python,
                python3-all-dev,

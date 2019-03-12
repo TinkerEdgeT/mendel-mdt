@@ -3,5 +3,5 @@ Upstream-Name: aiy-board-tools
 Source: https://aiyprojects.googlesource.com/aiy-board-tools
 
 Files: *
-Copyright: Copyright 2018 Google, LLC <support-aiyprojects@google.com>
+Copyright: Copyright 2018 Google, LLC <coral-support@google.com>
 License: Apache-2.0
