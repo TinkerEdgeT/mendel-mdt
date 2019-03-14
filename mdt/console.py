@@ -111,7 +111,7 @@ class PosixConsole:
                     else:
                         escape_level = 0
 
-                    if len(data) == 0:
+                    if not data:
                         exit_code = None
                         if self.channel.exit_status_ready():
                             exit_code = self.channel.recv_exit_status()
@@ -146,7 +146,7 @@ class TerminalOutputThread(threading.Thread):
         while True:
             try:
                 data = self.channel.recv(256)
-                if len(data) == 0:
+                if not data:
                     exit_code = None
                     if self.channel.exit_status_ready():
                         exit_code = self.channel.recv_exit_status()
