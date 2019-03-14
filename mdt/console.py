@@ -24,6 +24,12 @@ import sys
 import threading
 
 
+TYPE_KEYBOARD_INPUT = 0
+TYPE_TERMINAL_OUTPUT = 1
+TYPE_REMOTE_CLOSED = 2
+TYPE_SOCKET_TIMEOUT = 3
+
+
 class ConnectionClosedError(Exception):
     def __init__(self, exit_code=None):
         self.exit_code = exit_code
@@ -80,7 +86,7 @@ class PosixConsole:
                 if self.channel in read:
                     try:
                         data = self.channel.recv(256)
-                        if len(data) == 0:
+                        if not data:
                             exit_code = None
                             if self.channel.exit_status_ready():
                                 exit_code = self.channel.recv_exit_status()
@@ -117,49 +123,46 @@ class PosixConsole:
                 termios.tcsetattr(self.inputfile, TCSADRAIN, old_tty_attrs)
 
 
-class WindowsConsole:
-    TYPE_KEYBOARD_INPUT = 0
-    TYPE_TERMINAL_OUTPUT = 1
-    TYPE_REMOTE_CLOSED = 2
-    TYPE_SOCKET_TIMEOUT = 3
+class KeyboardInputThread(threading.Thread):
+    def __init__(self, queue):
+        super(KeyboardInputThread, self).__init__()
+        self.daemon = True
+        self.queue = queue
 
-    class KeyboardInputThread(threading.Thread):
-        def __init__(self, queue):
-            super(KeyboardInputThread, self).__init__()
-            self.daemon = True
-            self.queue = queue
+    def run(self):
+        while True:
+            ch = sys.stdin.read(1)
+            self.queue.put((KEYBOARD_INPUT_DATA, ch))
 
-        def run(self):
-            while True:
-                ch = sys.stdin.read(1)
-                self.queue.put((KEYBOARD_INPUT_DATA, ch))
 
-    class TerminalOutputThread(threading.Thread):
-        def __init__(self, queue, channel):
-            super(TerminalOutputThread, self).__init__()
-            self.daemon = True
-            self.queue = queue
-            self.channel = channel
+class TerminalOutputThread(threading.Thread):
+    def __init__(self, queue, channel):
+        super(TerminalOutputThread, self).__init__()
+        self.daemon = True
+        self.queue = queue
+        self.channel = channel
 
-        def run(self):
-            while True:
-                try:
-                    data = self.channel.recv(256)
-                    if len(data) == 0:
-                        exit_code = None
-                        if self.channel.exit_status_ready():
-                            exit_code = self.channel.recv_exit_status()
-                        self.queue.put((TYPE_REMOTE_CLOSED, exit_code))
-                        break
-                    data = data.decode("utf-8", errors="ignore")
-                    self.queue.put((TYPE_TERMINAL_OUTPUT, data))
-                except socket.timeout:
-                    self.queue.put((TYPE_SOCKET_TIMEOUT, None))
+    def run(self):
+        while True:
+            try:
+                data = self.channel.recv(256)
+                if len(data) == 0:
+                    exit_code = None
+                    if self.channel.exit_status_ready():
+                        exit_code = self.channel.recv_exit_status()
+                    self.queue.put((TYPE_REMOTE_CLOSED, exit_code))
                     break
+                data = data.decode("utf-8", errors="ignore")
+                self.queue.put((TYPE_TERMINAL_OUTPUT, data))
+            except socket.timeout:
+                self.queue.put((TYPE_SOCKET_TIMEOUT, None))
+                break
 
-            exit_status = self.channel.recv_exit_status()
-            self.queue.put((TYPE_EXIT_CODE, exit_status))
+        exit_status = self.channel.recv_exit_status()
+        self.queue.put((TYPE_EXIT_CODE, exit_status))
 
+
+class WindowsConsole:
     def __init__(self, channel, inputfile):
         self.channel = channel
         self.dataQueue = queue.Queue()
