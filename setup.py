@@ -31,7 +31,7 @@ setup(
     python_requires='>=3.5.0',
     install_requires=[
         'zeroconf',
-        'paramiko'
+        'paramiko>=2.0.0'
     ],
     data_files=[('share/man/man1', ['man/mdt.1'])],
     package_data={
