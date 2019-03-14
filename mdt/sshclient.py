@@ -163,7 +163,7 @@ class SshClient:
     def _generateEnvironment(self):
         environment = {}
         for pattern in self.envWhitelist.split(' '):
-            for name, value in os.environ.keys():
+            for name, value in os.environ.items():
                 if fnmatch.fnmatch(name, pattern):
                     environment[name] = value
         return environment
