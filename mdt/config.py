@@ -25,6 +25,7 @@ CONFIG_ATTRDIR = os.path.join(CONFIG_BASEDIR, "attribs")
 DEFAULT_USERNAME = "mendel"
 DEFAULT_PASSWORD = "mendel"
 DEFAULT_DISABLE_PASSWD_AUTH = "true"
+DEFAULT_ENV_WHITELIST = "TERM LANG LC_*"
 
 
 class Config:
@@ -69,6 +70,11 @@ class Config:
         if not password:
             return self.getAttribute("password", DEFAULT_PASSWORD)
         self.setAttribute("password", password)
+
+    def envWhitelist(self, whitelist=None):
+        if not whitelist:
+            return self.getAttribute("env-whitelist", DEFAULT_ENV_WHITELIST)
+        self.setAttribute("env-whitelist", whitelist)
 
     def shouldDisablePasswordAuth(self, disablePasswdAuth=None):
         if disablePasswdAuth == None:

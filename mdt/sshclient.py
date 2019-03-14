@@ -19,6 +19,7 @@ import http.client
 import os
 import socket
 import time
+import fnmatch
 
 import paramiko
 from paramiko.ssh_exception import AuthenticationException, SSHException
@@ -55,6 +56,7 @@ class SshClient:
 
         self.username = self.config.username()
         self.password = self.config.password()
+        self.envWhitelist = self.config.envWhitelist()
 
         if not self.maybeGenerateSshKeys():
             return False
@@ -158,8 +160,17 @@ class SshClient:
 
         return True
 
+    def _generateEnvironment(self):
+        environment = {}
+        for pattern in self.envWhitelist.split(' '):
+            for name, value in os.environ.keys():
+                if fnmatch.fnmatch(name, pattern):
+                    environment[name] = value
+        return environment
+
     def openShell(self):
         term = os.getenv("TERM", default="vt100")
+        env = self._generateEnvironment()
         width, height = os.get_terminal_size()
 
         if self._shouldPushKey():
@@ -173,6 +184,9 @@ class SshClient:
             allow_agent=False,
             look_for_keys=False,
             compress=True)
+
+        # FIXME(jtgans): Add environment support once all major distributions we
+        # support have added in Paramiko v2.1.x or newer.
         return self.client.invoke_shell(term=term, width=width, height=height)
 
     def shellExec(self, cmd, allocPty=False):
