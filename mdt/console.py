@@ -39,14 +39,29 @@ class SocketTimeoutError(Exception):
     pass
 
 
+def GetTtyWindowSize(fd):
+    import fcntl
+    import struct
+    import termios
+    tty_size = fcntl.ioctl(fd, termios.TIOCGWINSZ, '....')
+    return struct.unpack('hh', tty_size)
+
+
 class PosixConsole:
     def __init__(self, channel, inputfile):
         self.channel = channel
         self.inputfile = inputfile
+        self.has_tty = False
+
+    def _updateWindowSize(self, signum, stackFrame):
+        if self.has_tty:
+            (rows, columns) = GetTtyWindowSize(self.inputfile)
+            self.channel.resize_pty(columns, rows, 0, 0)
 
     def run(self):
         import termios
         import tty
+        import signal
 
         from termios import ISTRIP, INLCR, IGNCR, ICRNL, IXON, IXANY, IXOFF
         from termios import ISIG, ICANON, ECHO, ECHOE, ECHOK, ECHONL
@@ -69,10 +84,13 @@ class PosixConsole:
 
             newattrs = [iflag, oflag, cflag, lflag, ispeed, ospeed, cc]
             termios.tcsetattr(self.inputfile, TCSADRAIN, newattrs)
-            has_tty = True
+
+            signal.signal(signal.SIGWINCH, self._updateWindowSize)
+
+            self.has_tty = True
 
         except termios.error as e:
-            has_tty = False
+            self.has_tty = False
 
         try:
             self.channel.settimeout(0)
@@ -119,7 +137,7 @@ class PosixConsole:
 
                     self.channel.send(data)
         finally:
-            if has_tty:
+            if self.has_tty:
                 termios.tcsetattr(self.inputfile, TCSADRAIN, old_tty_attrs)
 
 
