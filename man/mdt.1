@@ -18,11 +18,28 @@ barrier to entry when working with these boards.
 With minimal effort, MDT should also be portable to existing systems such as
 Debian and Ubuntu, if needed. This, however, is out of the scope of this
 project.
+.SH TYPICAL WORKFLOW
+.PP
+Running the \fBmdt\fR command will automatically print out a summary of useful
+subcommands to run. The typical workflow with mdt is the following:
+.PP
+Run \fBmdt devices\fR to see what devices are available on your local network
+segment.
+.PP
+Run \fBmdt set preferred-device \fR\fIDEVICE-NAME-OR-IP-ADDRESS\fR to set the
+name or IP address of the device you would like to connect to.
+.PP
+Run \fBmdt shell\fR to open an interactive terminal to the device.
+.PP
+Run \fBmdt pull\fR or \fBmdt push\fR to push and pull files to and from the
+device.
 .SH NETWORKING
 .PP
 MDT uses SSH to handle most commands in the backend, and requires SSH keys for
-authentication to the device. The remote device is expected to advertise the
-_google_mdt._tcp service over mDNS and run both SSH and \fBmdt-keymaster\fR.
+authentication to the device. Keys are stored in the \fB~/.config/mdt/keys\fR
+directory, and are readily usable by standard SSH tooling, if required. The
+remote device is expected to advertise the _googlemdt._tcp service over mDNS
+and run both SSH and \fBmdt-keymaster\fR.
 .SH INITIAL SETUP
 .PP
 MDT expects the remote device to be free of any initial SSH keys and running the
