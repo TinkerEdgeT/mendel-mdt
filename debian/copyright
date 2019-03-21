@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: aiy-board-tools
-Source: https://aiyprojects.googlesource.com/aiy-board-tools
+Upstream-Name: mdt
+Source: https://coral.googlesource.com/mdt
 
 Files: *
 Copyright: Copyright 2018 Google, LLC <coral-support@google.com>

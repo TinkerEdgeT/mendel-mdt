@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from setuptools import setup, find_packages
 from os import path
 from io import open
@@ -10,15 +12,15 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='mdt',
     version='1.0',
-    description='A command-line tool to manage Mendel embedded systems',
+    description='A command-line tool to manage Mendel Linux embedded systems',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://aiyprojects.googlesource.com/mdt.git',
+    url='https://coral.googlesource.com/mdt.git',
     author='Mendel Linux Software Team',
     author_email='coral-support@google.com',
     license='Apache 2',
     classifiers = [
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Topic :: Software Development',
         'Topic :: Utilities',
@@ -27,15 +29,13 @@ setup(
         'Programming Language :: Python :: 3',
     ],
     keywords='embedded development',
-    packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    packages=find_packages(),
     python_requires='>=3.5.0',
     install_requires=[
-        'zeroconf',
+        'zeroconf>=0.19.1',
         'paramiko>=2.0.0'
     ],
     data_files=[('share/man/man1', ['man/mdt.1'])],
-    package_data={
-    },
     entry_points={
         'console_scripts': [
             'mdt=mdt.main:main',
