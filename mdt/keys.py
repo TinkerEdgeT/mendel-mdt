@@ -17,6 +17,7 @@ limitations under the License.
 
 import os
 import platform
+import shutil
 import subprocess
 
 import paramiko
@@ -87,4 +88,25 @@ keys.
         keystore = Keystore()
         if not keystore.generateKey():
             return 1
+        return 0
+
+
+class SetKeyCommand:
+    '''Usage: mdt setkey <path-to-private-key>
+
+Copies an SSH private key provided into the MDT key store for use with
+authentication later.'''
+
+    def run(self, args):
+        if len(args) != 2:
+            print("Usage: mdt setkey <path-to-private-key>")
+            return 1
+
+        source_keyfile = args[1]
+        if not os.path.exists(source_keyfile):
+            print("Can't copy {0}: no such file or directory.".format(source_keyfile))
+            return 1
+
+        shutil.copy(source_keyfile, KEYFILE_PATH)
+        print("Key {0} imported.".format(source_keyfile))
         return 0

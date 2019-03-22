@@ -99,6 +99,7 @@ COMMANDS = {
     'reboot': shell.RebootCommand(),
     'reboot-bootloader': shell.RebootBootloaderCommand(),
     'set': config.SetCommand(),
+    'setkey': keys.SetKeyCommand(),
     'shell': shell.ShellCommand(),
     'wait-for-device': devices.DevicesWaitCommand(),
 }
