@@ -19,6 +19,7 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 
 import paramiko
 from paramiko.ssh_exception import SSHException, PasswordRequiredException
@@ -57,6 +58,28 @@ class Keystore:
 
     def generateKey(self):
         self.pkey = RSAKey.generate(bits=4096)
+
+        try:
+            self.pkey.write_private_key_file(KEYFILE_PATH)
+        except IOError as e:
+            print("Unable to write private key to disk: {0}".format(e))
+            return False
+        else:
+            return True
+
+    def importKey(self, keyfile):
+        try:
+            self.pkey = RSAKey.from_private_key_file(keyfile)
+        except IOError as e:
+            print("Unable to read private key from file: {0}".format(e))
+            return False
+        except PasswordRequiredException as e:
+            print("Unable to load in private key: {0}".format(e))
+            return False
+        except SSHException as e:
+            print("Unable to import private key: {0}".format(e))
+            print("Note: Only OpenSSH keys generated using ssh-keygen in PEM format are supported.")
+            return False
 
         try:
             self.pkey.write_private_key_file(KEYFILE_PATH)
@@ -107,6 +130,9 @@ authentication later.'''
             print("Can't copy {0}: no such file or directory.".format(source_keyfile))
             return 1
 
-        shutil.copy(source_keyfile, KEYFILE_PATH)
+        keystore = Keystore()
+        if not keystore.importKey(source_keyfile):
+            return 1
+
         print("Key {0} imported.".format(source_keyfile))
         return 0

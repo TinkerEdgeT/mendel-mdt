@@ -96,6 +96,7 @@ COMMANDS = {
     'install': files.InstallCommand(),
     'pull': files.PullCommand(),
     'push': files.PushCommand(),
+    'pushkey': shell.PushKeyCommand(),
     'reboot': shell.RebootCommand(),
     'reboot-bootloader': shell.RebootBootloaderCommand(),
     'set': config.SetCommand(),

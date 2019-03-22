@@ -15,6 +15,7 @@ limitations under the License.
 '''
 
 
+import os
 import sys
 
 from mdt import command
@@ -104,3 +105,47 @@ class RebootBootloaderCommand(command.NetworkCommand):
         channel = client.shellExec("sudo reboot-bootloader")
         cons = console.Console(channel, sys.stdin)
         return cons.run()
+
+
+class PushKeyCommand(command.NetworkCommand):
+    '''Usage: mdt pushkey [<path-to-ssh-public-key>]
+
+Copies an SSH public key provided to the device's ~/.ssh/authorized_keys
+file. If no public key is provided, attempts to push MDTs previously generated
+public key from ~/.config/mdt/keys/mdt.key.
+'''
+
+    def runWithClient(self, client, args):
+        key_to_push = None
+
+        if len(args) == 1:
+            # The key was most likely pushed by the NetworkCommand substrate. We
+            # can simply return here.
+            print("MDT Key pushed.")
+            return 0
+
+        if len(args) != 2:
+            print("Usage: mdt pushkey [<path-to-public-key>]")
+            return 1
+
+        source_keyfile = args[1]
+        if not os.path.exists(source_keyfile):
+            print("Can't copy {0}: no such file or directory.".format(source_keyfile))
+            return 1
+
+        source_key = ''
+        with open(args[1], 'rb') as fp:
+            source_key = fp.read()
+
+        sftp = client.openSftp()
+        try:
+            sftp.chdir('/home/mendel/.ssh')
+        except FileNotFoundError as e:
+            sftp.mkdir('/home/mendel/.ssh', mode=0o700)
+
+        with sftp.open('/home/mendel/.ssh/authorized_keys', 'a+b') as fp:
+            fp.write('\r\n')
+            fp.write(source_key)
+
+        print("Key {0} pushed.".format(source_keyfile))
+        return 0
