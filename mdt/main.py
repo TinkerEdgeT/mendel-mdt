@@ -45,23 +45,27 @@ MDT_USAGE_HELP = '''
 Usage: mdt <subcommand> [<options>]
 
 Where <subcommand> may be one of the following:
-    help            - this command, gets help on another command.
-    devices         - lists all detected devices.
-    wait-for-device - waits for a device to be discovered on the network
-    get             - gets an MDT variable value
-    set             - sets an MDT variable value
-    clear           - clears an MDT variable
-    genkey          - generates an SSH key for connecting to a device
-    shell           - opens an interactive shell to a device
-    exec            - runs a shell command and returns the output and the exit
-                      code
-    install         - installs a Debian package using mdt-install-package on
-                      the device
-    push            - pushes a file (or files) to the device
-    pull            - pulls a file (or files) from the device
+    help              - this command, gets help on another command.
+    devices           - lists all detected devices.
+    wait-for-device   - waits for a device to be discovered on the network
+    get               - gets an MDT variable value
+    set               - sets an MDT variable value
+    clear             - clears an MDT variable
+    genkey            - generates an SSH key for connecting to a device
+    pushkey           - pushes an SSH public key to a device
+    setkey            - imports a PEM-format SSH private key into the MDT
+                        keystore
+    shell             - opens an interactive shell to a device
+    exec              - runs a shell command and returns the output and the
+                        exit code
+    install           - installs a Debian package using mdt-install-package on
+                        the device
+    push              - pushes a file (or files) to the device
+    pull              - pulls a file (or files) from the device
+    reboot            - reboots a device
+    reboot-bootloader - reboots a device into the bootloader
 
 Use "mdt help <subcommand>" for more details.
-
 '''
 
 
