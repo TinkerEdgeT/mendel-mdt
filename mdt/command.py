@@ -54,6 +54,7 @@ class NetworkCommand:
             self.address = self.device
 
         if not self.address:
+            self.discoverer.start()
             if self.device:
                 print('Waiting for device {0}...'.format(self.device))
             else:

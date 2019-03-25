@@ -26,6 +26,8 @@ class Discoverer:
         self.zeroconf = Zeroconf()
         self.discoveries = {}
         self.listener = listener
+
+    def start(self):
         self.browser = ServiceBrowser(self.zeroconf, "_googlemdt._tcp.local.", self)
 
     def add_service(self, zeroconf, type, name):
@@ -47,3 +49,4 @@ class Discoverer:
 
     def stop(self):
         self.browser.cancel()
+        self.browser = None

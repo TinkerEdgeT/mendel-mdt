@@ -40,6 +40,7 @@ it does not require a running Avahi daemon.
         self.device = Config().preferredDevice()
 
     def run(self, args):
+        self.discoverer.start()
         sleep(1)
         discoveries = self.discoverer.discoveries
         for host, address in discoveries.items():
@@ -75,6 +76,7 @@ ZeroConf for discovery, so it does not require a running Avahi daemon.
 
     def run(self, args):
         print('Waiting for device...')
+        self.discoverer.start()
         while not self.found_devices:
             sleep(0.1)
         print('Device found: {0} ({1})'.format(self.hostname, self.address))
