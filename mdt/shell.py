@@ -23,10 +23,13 @@ from mdt import console
 
 
 class ShellCommand(command.NetworkCommand):
-    '''Usage: mdt shell
+    '''Usage: mdt shell [<device-or-ip-address>]
 
 Opens an interactive shell to either your preferred device or to the first
 device found.
+
+If <device-or-ip-address> is specified, shell will attempt to connect to that
+device name or directly to the IP address provided instead.
 
 Variables used:
     preferred-device    - set this to your preferred device name to connect
@@ -51,6 +54,16 @@ attempt to connect to a device by doing the following:
   3. Installs your SSH key to the device after logging in.
   4. Disconnects and reconnects using the SSH key.
 '''
+
+    def preConnectRun(self, args):
+        if len(args) > 2:
+            print("Usage: mdt shell [<device-or-ip-address>]")
+            return False
+
+        if len(args) == 2:
+            self.device = args[1]
+
+        return True
 
     def runWithClient(self, client, args):
         channel = client.openShell()

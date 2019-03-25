@@ -50,6 +50,8 @@ class NetworkCommand:
         if not self.preConnectRun(args):
             return 1
 
+        # User provided an IP address to connect to instead -- we should skip
+        # discovery.
         if self.device and IP_ADDR_REGEX.match(self.device):
             self.address = self.device
 
