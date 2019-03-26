@@ -19,36 +19,58 @@ from typing import cast
 from zeroconf import ServiceBrowser, Zeroconf
 
 import socket
+import time
 
 
 class Discoverer:
+    ANNOUNCE_PERIOD_SECS = 1
+    MAXIMUM_WAIT_CYCLES = 10
+    SERVICE_TYPE = "_googlemdt._tcp.local."
+
     def __init__(self, listener=None):
-        self.zeroconf = Zeroconf()
         self.discoveries = {}
         self.listener = listener
-        self.browser = None
+        self.zeroconf = None
 
-    def start(self):
-        self.browser = ServiceBrowser(self.zeroconf, "_googlemdt._tcp.local.", self)
+    def discover(self):
+        self.zeroconf = Zeroconf()
+        self.browser = ServiceBrowser(self.zeroconf, Discoverer.SERVICE_TYPE, self)
+        self._heard_announcement = True
+        cycle_count = 0
+
+        # Keep waiting until we stop hearing announcements for a full second, or until we've waited 10 seconds
+        while self._heard_announcement and cycle_count < Discoverer.MAXIMUM_WAIT_CYCLES:
+            cycle_count += 1
+            self._heard_announcement = False
+            time.sleep(Discoverer.ANNOUNCE_PERIOD_SECS)
+
+        self.browser.cancel()
+        self.browser = None
+        self.zeroconf = None
 
     def add_service(self, zeroconf, type, name):
         info = self.zeroconf.get_service_info(type, name)
+
         if info:
             hostname = info.server.split('.')[0]
             address = socket.inet_ntoa(cast(bytes, info.address))
+
+            # Prevent duplicate announcements from extending the discovery delay
+            if hostname not in self.discoveries:
+                self._heard_announcement = True
+
             self.discoveries[hostname] = address
+
             if self.listener and hasattr(self.listener, "add_device"):
                 self.listener.add_device(hostname, address)
 
     def remove_service(self, zeroconf, type, name):
         info = self.zeroconf.get_service_info(type, name)
+        self._heard_announcement = True
+
         if self.listener and hasattr(self.listener, "remove_device"):
             self.listener.remove_device(info.server,
                                         self.discoveries[info.server])
+
         if info.server in self.discoveries:
             del(self.discoveries[info.server])
-
-    def stop(self):
-        if self.browser:
-            self.browser.cancel()
-            self.browser = None

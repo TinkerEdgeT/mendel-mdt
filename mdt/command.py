@@ -56,16 +56,12 @@ class NetworkCommand:
             self.address = self.device
 
         if not self.address:
-            self.discoverer.start()
             if self.device:
                 print('Waiting for device {0}...'.format(self.device))
             else:
                 print('Waiting for a device...')
+            self.discoverer.discover()
 
-            while not self.address:
-                sleep(0.1)
-
-        self.discoverer.stop()
         client = None
         try:
             print('Connecting to {0} at {1}'.format(self.device, self.address))

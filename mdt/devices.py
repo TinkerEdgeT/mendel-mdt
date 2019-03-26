@@ -40,8 +40,7 @@ it does not require a running Avahi daemon.
         self.device = Config().preferredDevice()
 
     def run(self, args):
-        self.discoverer.start()
-        sleep(1)
+        self.discoverer.discover()
         discoveries = self.discoverer.discoveries
         for host, address in discoveries.items():
             if self.device and host == self.device:
@@ -53,16 +52,7 @@ it does not require a running Avahi daemon.
 class DevicesWaitCommand:
     '''Usage: mdt wait-for-device
 
-Waits for either the first device found, or your preferred device to be
-discovered on the local network segment.
-
-Variables used:
-   preferred-device: contains the device name you want as your default
-                     Can be set to an IPv4 address to bypass the mDNS lookup.
-
-Note: if preferred-device is cleared, then this will return on the first
-available device found. Also, MDT uses a python implementation of mDNS
-ZeroConf for discovery, so it does not require a running Avahi daemon.
+Waits until a device is found.
 '''
 
     def __init__(self):
@@ -76,7 +66,9 @@ ZeroConf for discovery, so it does not require a running Avahi daemon.
 
     def run(self, args):
         print('Waiting for device...')
-        self.discoverer.start()
+
         while not self.found_devices:
-            sleep(0.1)
-        print('Device found: {0} ({1})'.format(self.hostname, self.address))
+            self.discoverer.discover()
+
+        print('Found {0} devices.'.format(len(self.discoverer.discoveries)))
+        return 0
