@@ -149,7 +149,7 @@ Pushes (copies) a local file or set of files to the remote device.
 
 
 class PullCommand(command.NetworkCommand):
-    '''Usage: mdt pull [<filename...>]
+    '''Usage: mdt pull <filename...> <local-destination-path>
 
 Variables used:
     preferred-device    - set this to your preferred device name to connect
@@ -168,7 +168,7 @@ Pulls (copies) a set of files from the remote device to a local path.
 
     def preConnectRun(self, args):
         if len(args) < 3:
-            print("Usage: mdt pull [<filename...>]")
+            print("Usage: mdt pull <filename...> <local-destination-path>")
             return False
 
         return True
