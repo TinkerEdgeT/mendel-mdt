@@ -1,5 +1,17 @@
-mdt (0.0.1-1) UNRELEASED; urgency=low
+mdt (1.0-1) UNRELEASED; urgency=medium
 
+  * Reworked how mDNS discoveries are done.
+  * Make the shell command respect requested IP addresses.
+  * Stop trying to scan for devices after construction of the Discoverer.
+  * Add pushkey and setkey to help with key management.
+  * Disable warnings from Python 3.5 about deprecated sign and verify
+    functions. They're confusing, noisy, and content-free.
+
+ -- June Tate-Gans <jtgans@google.org>  Tue, 26 Mar 2019 14:42:22 -0700
+
+mdt (0.0.1-1) stable; urgency=low
+
+  June Tate-Gans
   * Initial release
 
  -- June Tate-Gans <jtgans@google.org>  Thu, 27 Dec 2018 14:02:00 -0700
