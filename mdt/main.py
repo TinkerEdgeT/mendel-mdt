@@ -41,6 +41,16 @@ from mdt import keys
 from mdt import shell
 
 
+# Stop programmer's warnings about CryptographyDeprecations for silly APIs like
+# sign and verify. FIXME(jtgans): Remove this once paramiko updates their public
+# releases in Debian. See also https://github.com/paramiko/paramiko/issues/1386
+import warnings
+warnings.filterwarnings(
+    action='ignore',
+    message='.*signer and verifier have been deprecated.*',
+    module='.*paramiko.rsakey')
+
+
 MDT_USAGE_HELP = '''
 Usage: mdt <subcommand> [<options>]
 
