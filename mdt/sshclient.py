@@ -42,6 +42,10 @@ class DefaultLoginError(Exception):
     pass
 
 
+class NonLocalDeviceError(Exception):
+    pass
+
+
 class SshClient:
     def __init__(self, device, address):
         self.config = config.Config()
@@ -82,11 +86,26 @@ class SshClient:
         return authorized_keys_line
 
     def _pushKeyViaKeymaster(self):
+        if not self.address.startswith('192.168.100'):
+            raise NonLocalDeviceError()
+
         connection = http.client.HTTPConnection(self.address, KEYMASTER_PORT)
         try:
             key_line = self._generateAuthorizedKeysLine()
-            connection.request('PUT', '/', key_line + '\n')
+            connection.request('PUT', '/', key_line + '\r\n')
             response = connection.getresponse()
+        except ConnectionRefusedError as e:
+            print()
+            print("Couldn't connect to keymaster on {0}: {1}.".format(self.device, e))
+            print()
+            print("Did you previously connect from a different machine? If so,\n"
+                  "mdt-keymaster will not be running as it only accepts a single key.\n")
+            print("You will need to either remove the key from ~/.ssh/authorized_keys\n"
+                  "via some other method (serial console, etc), or you will need to\n"
+                  "connect from the other machine to push an SSH public key to the\n"
+                  "authorized_keys file.")
+            print()
+            raise KeyPushError(e)
         except ConnectionError as e:
             raise KeyPushError(e)
         finally:
@@ -117,7 +136,7 @@ class SshClient:
         try:
             self._pushKeyViaKeymaster()
         except KeyPushError as e:
-            print('Failed to push via keymaster -- attempting password login')
+            print('Failed to push via keymaster -- will attempt password login as a fallback.')
             self._pushKeyViaDefaultLogin()
 
         time.sleep(1)

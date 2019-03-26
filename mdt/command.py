@@ -73,6 +73,15 @@ class NetworkCommand:
         except sshclient.DefaultLoginError as e:
             print("Can't login using default credentials: {0}".format(e))
             return 1
+        except sshclient.NonLocalDeviceError as e:
+            print()
+            print("It looks like you're trying to connect to a device that isn't connected\n"
+                  "to your workstation via USB and doesn't have the SSH key this MDT generated.\n"
+                  "To connect with `mdt shell` you will need to first connect to your device\n"
+                  "ONLY via USB.")
+            print()
+            print("Cowardly refusing to attempt to push a key to a public machine.\n")
+            return 1
         except SSHException as e:
             print("Couldn't establish ssh connection to device: {0}".format(e))
             return 1
