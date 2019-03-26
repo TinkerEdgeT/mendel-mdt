@@ -39,6 +39,7 @@ from mdt import devices
 from mdt import files
 from mdt import keys
 from mdt import shell
+import mdt
 
 
 # Stop programmer's warnings about CryptographyDeprecations for silly APIs like
@@ -74,6 +75,7 @@ Where <subcommand> may be one of the following:
     pull              - pulls a file (or files) from the device
     reboot            - reboots a device
     reboot-bootloader - reboots a device into the bootloader
+    version           - prints which version of MDT this is
 
 Use "mdt help <subcommand>" for more details.
 '''
@@ -100,6 +102,16 @@ of subcommands available.
                   "-- please yell at the developers. :)".format(subcommand))
 
 
+class VersionCommand:
+    '''Usage: mdt version
+
+Prints the MDT version.
+'''
+
+    def run(self, args):
+        print("MDT version {0}".format(mdt.__version__))
+
+
 COMMANDS = {
     'clear': config.ClearCommand(),
     'devices': devices.DevicesCommand(),
@@ -117,6 +129,7 @@ COMMANDS = {
     'setkey': keys.SetKeyCommand(),
     'shell': shell.ShellCommand(),
     'wait-for-device': devices.DevicesWaitCommand(),
+    'version': VersionCommand(),
 }
 
 
