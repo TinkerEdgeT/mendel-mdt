@@ -15,11 +15,13 @@ limitations under the License.
 '''
 
 
+import re
 import os
 import sys
 
 from mdt import command
 from mdt import console
+from mdt import keys
 
 
 class ShellCommand(command.NetworkCommand):
@@ -101,21 +103,21 @@ attempt to connect to a device by doing the following:
   4. Disconnects and reconnects using the SSH key.
 '''
     def runWithClient(self, client, args):
-        channel = client.shellExec(' '.join(args[1:]))
+        channel = client.shellExec(' '.join(args[1:]), allocPty=True)
         cons = console.Console(channel, sys.stdin)
         return cons.run()
 
 
 class RebootCommand(command.NetworkCommand):
     def runWithClient(self, client, args):
-        channel = client.shellExec("sudo reboot")
+        channel = client.shellExec("sudo reboot", allocPty=True)
         cons = console.Console(channel, sys.stdin)
         return cons.run()
 
 
 class RebootBootloaderCommand(command.NetworkCommand):
     def runWithClient(self, client, args):
-        channel = client.shellExec("sudo reboot-bootloader")
+        channel = client.shellExec("sudo reboot-bootloader", allocPty=True)
         cons = console.Console(channel, sys.stdin)
         return cons.run()
 
@@ -128,20 +130,15 @@ file. If no public key is provided, attempts to push MDTs previously generated
 public key from ~/.config/mdt/keys/mdt.key.
 '''
 
-    def runWithClient(self, client, args):
-        key_to_push = None
+    def _pushMdtKey(self, client):
+        print('Pushing {0}'.format(keys.KEYFILE_PATH))
+        client.pushKey()
+        print('Push complete.')
+        return 0
 
-        if len(args) == 1:
-            # The key was most likely pushed by the NetworkCommand substrate. We
-            # can simply return here.
-            print("MDT Key pushed.")
-            return 0
+    def _pushOtherKey(self, client, keyfile):
+        sftp = client.openSftp()
 
-        if len(args) != 2:
-            print("Usage: mdt pushkey [<path-to-public-key>]")
-            return 1
-
-        source_keyfile = args[1]
         if not os.path.exists(source_keyfile):
             print("Can't copy {0}: no such file or directory.".format(source_keyfile))
             return 1
@@ -150,7 +147,6 @@ public key from ~/.config/mdt/keys/mdt.key.
         with open(args[1], 'rb') as fp:
             source_key = fp.read()
 
-        sftp = client.openSftp()
         try:
             sftp.chdir('/home/mendel/.ssh')
         except FileNotFoundError as e:
@@ -162,3 +158,66 @@ public key from ~/.config/mdt/keys/mdt.key.
 
         print("Key {0} pushed.".format(source_keyfile))
         return 0
+
+    def runWithClient(self, client, args):
+        key_to_push = None
+
+        # No arguments? Let the usual client push take effect.
+        if len(args) == 1:
+            return self._pushMdtKey(client)
+
+        source_keyfile = args[1]
+        print('Pushing {0}'.format(source_keyfile))
+        return self._pushOtherKey(client, source_keyfile)
+
+
+class ResetKeysCommand(command.NetworkCommand):
+    '''Usage: mdt resetkeys <device-or-ip-address>
+
+Resets a device to it's pre-MDT state by removing all MDT keys and restarting
+the mdt-keymaster on the device so that new keys can be pushed again.'''
+
+    def preConnectRun(self, args):
+        if len(args) != 2:
+            print("Usage: mdt resetkeys <device-or-ip-address>")
+            return False
+
+        if len(args) == 2:
+            self.device = args[1]
+
+        return True
+
+    def runWithClient(self, client, args):
+        # Setup this session now, since once we remove the key from
+        # authorized_keys, we won't be able to use execSession.
+        channel = client.openChannel()
+
+        sftp = client.openSftp()
+        try:
+            sftp.chdir('/home/mendel/.ssh')
+        except FileNotFoundError as e:
+            print('No keys were previously pushed to the board.')
+        else:
+            lines = []
+
+            with sftp.open('/home/mendel/.ssh/authorized_keys', 'r') as fp:
+                lines = fp.readlines()
+
+            with sftp.open('/home/mendel/.ssh/authorized_keys', 'w') as fp:
+                for line in lines:
+                    if ' mdt' not in line:
+                        print('wrote: {0}'.format(line))
+                        fp.write(line)
+
+        channel.exec_command("sudo systemctl restart mdt-keymaster")
+        cons = console.Console(channel, sys.stdin)
+        try:
+            cons.run()
+        except console.ConnectionClosedError as e:
+            if e.exit_code:
+                print('`systemctl restart mdt-keymaster` exited with code {0}'.format(e.exit_code))
+                print('Your device may be in an inconsistent state. Verify using')
+                print('the serial console.')
+            else:
+                print('Successfully reset {0}'.format(self.device))
+            return e.exit_code

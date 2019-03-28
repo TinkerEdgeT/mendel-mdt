@@ -66,6 +66,8 @@ Where <subcommand> may be one of the following:
     pushkey           - pushes an SSH public key to a device
     setkey            - imports a PEM-format SSH private key into the MDT
                         keystore
+    resetkeys         - removes all keys from the given board and resets key
+                        authentication to factory defaults
     shell             - opens an interactive shell to a device
     exec              - runs a shell command and returns the output and the
                         exit code
@@ -125,6 +127,7 @@ COMMANDS = {
     'pushkey': shell.PushKeyCommand(),
     'reboot': shell.RebootCommand(),
     'reboot-bootloader': shell.RebootBootloaderCommand(),
+    'resetkeys': shell.ResetKeysCommand(),
     'set': config.SetCommand(),
     'setkey': keys.SetKeyCommand(),
     'shell': shell.ShellCommand(),
