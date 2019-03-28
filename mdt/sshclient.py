@@ -86,6 +86,9 @@ class SshClient:
         return authorized_keys_line
 
     def _pushKeyViaKeymaster(self):
+        if not self.address:
+            raise discoverer.DeviceNotFoundError()
+
         if not self.address.startswith('192.168.100'):
             raise NonLocalDeviceError()
 

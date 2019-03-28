@@ -62,6 +62,10 @@ class NetworkCommand:
                 print('Waiting for a device...')
             self.discoverer.discover()
 
+        if not self.address:
+            print('Unable to find a device called {0} on your local network segment.'.format(self.device))
+            return 1
+
         client = None
         try:
             print('Connecting to {0} at {1}'.format(self.device, self.address))

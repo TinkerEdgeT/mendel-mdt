@@ -22,6 +22,10 @@ import socket
 import time
 
 
+class DeviceNotFoundError(Exception):
+    pass
+
+
 class Discoverer:
     ANNOUNCE_PERIOD_SECS = 1
     MAXIMUM_WAIT_CYCLES = 10
