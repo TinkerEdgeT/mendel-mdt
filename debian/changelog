@@ -1,4 +1,4 @@
-mdt (1.0-1) UNRELEASED; urgency=medium
+mdt (1.0-1) stable; urgency=medium
 
   * Reworked how mDNS discoveries are done.
   * Make the shell command respect requested IP addresses.
@@ -6,6 +6,9 @@ mdt (1.0-1) UNRELEASED; urgency=medium
   * Add pushkey and setkey to help with key management.
   * Disable warnings from Python 3.5 about deprecated sign and verify
     functions. They're confusing, noisy, and content-free.
+  * Update man pages.
+  * Add a resetkeys subcommand to remove MDT keys and restart
+    mdt-keymaster.
 
  -- June Tate-Gans <jtgans@google.org>  Tue, 26 Mar 2019 14:42:22 -0700
 
