@@ -63,7 +63,10 @@ class NetworkCommand:
             self.discoverer.discover()
 
         if not self.address:
-            print('Unable to find a device called {0} on your local network segment.'.format(self.device))
+            if not self.device:
+                print('Unable to find any devices on your local network segment.')
+            else:
+                print('Unable to find a device called {0} on your local network segment.'.format(self.device))
             return 1
 
         client = None
