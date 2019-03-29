@@ -18,6 +18,9 @@ barrier to entry when working with these boards.
 With minimal effort, MDT should also be portable to existing systems such as
 Debian and Ubuntu, if needed. This, however, is out of the scope of this
 project.
+.PP
+MDT primarily uses the SSH protocol for most of its operations, and heavily
+relies on key-based authentication to the device.
 .SH TYPICAL WORKFLOW
 .PP
 Running the \fBmdt\fR command will automatically print out a summary of useful
@@ -29,10 +32,15 @@ segment.
 Run \fBmdt set preferred-device \fR\fIDEVICE-NAME-OR-IP-ADDRESS\fR to set the
 name or IP address of the device you would like to connect to.
 .PP
-Run \fBmdt shell\fR to open an interactive terminal to the device.
+Run \fBmdt shell\fR to open an interactive terminal to the device. This will
+automatically generate a key (if you didn't have one already), push the key to
+the board, and then open an interactive shell via SSH.
 .PP
 Run \fBmdt pull\fR or \fBmdt push\fR to push and pull files to and from the
 device.
+.PP
+Run \fBmdt install\fR to install a locally-built Debian package to the board,
+without having to manually push and run dpkg.
 .SH NETWORKING
 .PP
 MDT uses SSH to handle most commands in the backend, and requires SSH keys for
@@ -56,6 +64,10 @@ Once this file has been written to, \fBmdt-keymaster\fR will stop running from
 that point forward, and key authentication should perform normally. It is
 expected that the remote SSH service will be running in key authentication mode
 only.
+.PP
+To reset the board's authentication keys, run \fBmdt resetkeys\fR. This will
+remove all MDT keys from the device's authorized_keys file and restart
+\fBmdt-keymaster\fB, making it ready to receive new keys again.
 .SH SUBCOMMANDS
 .PP
 MDT recognizes the following subcommands:
@@ -94,14 +106,24 @@ reboots a connected device
 \fBreboot-bootloader\fR
 reboots a connected device into the fastboot bootloader
 .TP
+\fBresetkeys\fR
+removes all MDT keys from a device and restarts \fBmdt-keymaster\fR so that keys
+may be pushed again
+.TP
 \fBset\fR
 sets an MDT variable on disk
+.TP
+\fBsetkey\fR
+imports an OpenSSH \fBprivate\fR key in PEM format into MDT's keys directory
 .TP
 \fBshell\fR
 opens an SSH shell connection to a connected device
 .TP
 \fBwait-for-device\fR
 waits for a device to be discovered on the local network segment
+.TP
+\fBversion\fR
+prints which version of MDT this is
 .SH FILES
 .PP
 MDT stores files in the user's home directory under the standard
