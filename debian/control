@@ -1,4 +1,4 @@
-Source: mdt
+Source: mendel-development-tool
 Section: python
 Maintainer: Coral <coral-support@google.com>
 Build-Depends: debhelper,
@@ -8,7 +8,7 @@ Build-Depends: debhelper,
 Priority: optional
 Vcs-Git: https://aiyprojects.googlesource.com/mdt
 
-Package: mdt
+Package: mendel-development-tool
 Section: misc
 Priority: optional
 Architecture: all

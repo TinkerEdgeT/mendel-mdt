@@ -10,7 +10,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='mdt',
+    name='mendel-development-tool',
     version='1.0',
     description='A command-line tool to manage Mendel Linux embedded systems',
     long_description=long_description,
