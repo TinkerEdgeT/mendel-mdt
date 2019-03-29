@@ -42,14 +42,21 @@ from mdt import shell
 import mdt
 
 
-# Stop programmer's warnings about CryptographyDeprecations for silly APIs like
-# sign and verify. FIXME(jtgans): Remove this once paramiko updates their public
-# releases in Debian. See also https://github.com/paramiko/paramiko/issues/1386
+# Stop deprecation warnings from Python's crypto libs for silly APIs like sign
+# and verify and ecdh junk that we don't even use, nor can we fix.
 import warnings
 warnings.filterwarnings(
     action='ignore',
     message='.*signer and verifier have been deprecated.*',
     module='.*paramiko.rsakey')
+warnings.filterwarnings(
+    action='ignore',
+    message='.*encode_point has been deprecated on EllipticCurvePublicNumbers.*',
+    module='.*paramiko.kex_ecdh_nist')
+warnings.filterwarnings(
+    action='ignore',
+    message='.*Support for unsafe construction of public numbers.*',
+    module='.*paramiko.kex_ecdh_nist')
 
 
 MDT_USAGE_HELP = '''
