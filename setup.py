@@ -24,7 +24,7 @@ setup(
         'Intended Audience :: Developers',
         'Topic :: Software Development',
         'Topic :: Utilities',
-        'License :: OSI Approved :: Apache License',
+        'License :: OSI Approved :: Apache Software License',
         'Operating System :: POSIX',
         'Programming Language :: Python :: 3',
     ],
