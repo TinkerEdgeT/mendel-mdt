@@ -6,7 +6,7 @@ Build-Depends: debhelper,
                python3-all-dev,
                python3-setuptools
 Priority: optional
-Vcs-Git: https://aiyprojects.googlesource.com/mdt
+Vcs-Git: https://coral.googlesource.com/mdt
 
 Package: mendel-development-tool
 Section: misc

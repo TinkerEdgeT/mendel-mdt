@@ -1,4 +1,4 @@
-mdt (1.0-1) stable; urgency=medium
+mendel-development-tool (1.0-1) stable; urgency=medium
 
   * Reworked how mDNS discoveries are done.
   * Make the shell command respect requested IP addresses.
@@ -12,7 +12,7 @@ mdt (1.0-1) stable; urgency=medium
 
  -- June Tate-Gans <jtgans@google.org>  Tue, 26 Mar 2019 14:42:22 -0700
 
-mdt (0.0.1-1) stable; urgency=low
+mendel-development-tool (0.0.1-1) stable; urgency=low
 
   June Tate-Gans
   * Initial release
