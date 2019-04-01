@@ -139,12 +139,12 @@ public key from ~/.config/mdt/keys/mdt.key.
     def _pushOtherKey(self, client, keyfile):
         sftp = client.openSftp()
 
-        if not os.path.exists(source_keyfile):
-            print("Can't copy {0}: no such file or directory.".format(source_keyfile))
+        if not os.path.exists(keyfile):
+            print("Can't copy {0}: no such file or directory.".format(keyfile))
             return 1
 
         source_key = ''
-        with open(args[1], 'rb') as fp:
+        with open(keyfile, 'rb') as fp:
             source_key = fp.read()
 
         try:
@@ -156,7 +156,7 @@ public key from ~/.config/mdt/keys/mdt.key.
             fp.write('\r\n')
             fp.write(source_key)
 
-        print("Key {0} pushed.".format(source_keyfile))
+        print("Key {0} pushed.".format(keyfile))
         return 0
 
     def runWithClient(self, client, args):
