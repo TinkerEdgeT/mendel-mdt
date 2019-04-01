@@ -70,11 +70,12 @@ class Discoverer:
 
     def remove_service(self, zeroconf, type, name):
         info = self.zeroconf.get_service_info(type, name)
-        self._heard_announcement = True
 
-        if self.listener and hasattr(self.listener, "remove_device"):
-            self.listener.remove_device(info.server,
-                                        self.discoveries[info.server])
+        if info:
+            if self.listener and hasattr(self.listener, "remove_device"):
+                self.listener.remove_device(info.server,
+                                            self.discoveries[info.server])
 
-        if info.server in self.discoveries:
-            del(self.discoveries[info.server])
+            if info.server in self.discoveries:
+                self._heard_announcement = True
+                del(self.discoveries[info.server])
