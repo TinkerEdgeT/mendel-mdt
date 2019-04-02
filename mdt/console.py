@@ -28,6 +28,7 @@ TYPE_KEYBOARD_INPUT = 0
 TYPE_TERMINAL_OUTPUT = 1
 TYPE_REMOTE_CLOSED = 2
 TYPE_SOCKET_TIMEOUT = 3
+KEEP_ALIVE_SECONDS = 10
 
 
 class ConnectionClosedError(Exception):
@@ -52,11 +53,23 @@ class PosixConsole:
         self.channel = channel
         self.inputfile = inputfile
         self.has_tty = False
+        self.linux = os.uname()[0] == 'Linux'
 
     def _updateWindowSize(self, signum, stackFrame):
         if self.has_tty:
             (rows, columns) = GetTtyWindowSize(self.inputfile)
             self.channel.resize_pty(columns, rows, 0, 0)
+
+    def _socketSendQueueLevel(self):
+        # Only supported on Linux
+        if not self.linux:
+            return 0
+
+        import fcntl
+        import struct
+        SIOCOUTQ = 0x5411
+        sock = self.channel.get_transport().sock
+        return struct.unpack("I", fcntl.ioctl(sock.fileno(), SIOCOUTQ, '\0\0\0\0'))[0]
 
     def run(self):
         import termios
@@ -94,11 +107,25 @@ class PosixConsole:
 
         try:
             self.channel.settimeout(0)
+            self.channel.get_transport().set_keepalive(KEEP_ALIVE_SECONDS)
+            timeouts = 0
+            tx_level = 0
 
             while True:
                 read, write, exception = select.select([self.channel,
                                                         self.inputfile],
-                                                       [], [])
+                                                       [], [], KEEP_ALIVE_SECONDS + 1)
+                timeout = not read and not write and not exception
+                if self.linux and timeout:
+                    timeouts += 1
+                    if timeouts == 1:
+                        tx_level = self._socketSendQueueLevel()
+                    else:
+                        current_tx_level = self._socketSendQueueLevel()
+                        if current_tx_level and current_tx_level >= tx_level:
+                            raise SocketTimeoutError(socket.timeout())
+                else:
+                    timeouts = 0
 
                 # data from device to host
                 if self.channel in read:
