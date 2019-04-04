@@ -53,7 +53,7 @@ class PosixConsole:
         self.channel = channel
         self.inputfile = inputfile
         self.has_tty = False
-        self.linux = os.uname()[0] == 'Linux'
+        self.uname = os.uname()
 
     def _updateWindowSize(self, signum, stackFrame):
         if self.has_tty:
@@ -61,15 +61,20 @@ class PosixConsole:
             self.channel.resize_pty(columns, rows, 0, 0)
 
     def _socketSendQueueLevel(self):
-        # Only supported on Linux
-        if not self.linux:
-            return 0
-
         import fcntl
+        import socket
         import struct
+
         SIOCOUTQ = 0x5411
+        SO_NWRITE = 0x1024
         sock = self.channel.get_transport().sock
-        return struct.unpack("I", fcntl.ioctl(sock.fileno(), SIOCOUTQ, '\0\0\0\0'))[0]
+
+        # Only Linux doesn't support SO_NWRITE, which has been available since 4.3 BSD. O.o
+        if uname == "Linux":
+            return struct.unpack("I", fcntl.ioctl(sock.fileno(), SIOCOUTQ, '\0\0\0\0'))[0]
+
+        return sock.getsockopt(socket.SOL_SOCKET, SO_NWRITE)
+
 
     def run(self):
         import termios
@@ -108,24 +113,26 @@ class PosixConsole:
         try:
             self.channel.settimeout(0)
             self.channel.get_transport().set_keepalive(KEEP_ALIVE_SECONDS)
-            timeouts = 0
-            tx_level = 0
+            timeout_count = 0
+            initial_tx_level = 0
 
             while True:
                 read, write, exception = select.select([self.channel,
                                                         self.inputfile],
                                                        [], [], KEEP_ALIVE_SECONDS + 1)
-                timeout = not read and not write and not exception
-                if self.linux and timeout:
-                    timeouts += 1
-                    if timeouts == 1:
-                        tx_level = self._socketSendQueueLevel()
+
+                select_timedout = not read and not write and not exception
+                if select_timedout:
+                    timeout_count += 1
+
+                    if timeout_count == 1:
+                        initial_tx_level = self._socketSendQueueLevel()
                     else:
                         current_tx_level = self._socketSendQueueLevel()
-                        if current_tx_level and current_tx_level >= tx_level:
+                        if current_tx_level and current_tx_level >= initial_tx_level:
                             raise SocketTimeoutError(socket.timeout())
                 else:
-                    timeouts = 0
+                    timeout_count = 0
 
                 # data from device to host
                 if self.channel in read:
