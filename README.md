@@ -15,3 +15,15 @@ barrier to entry when working with these boards.
 With minimal effort, MDT should also be portable to existing systems such as
 Debian and Ubuntu, if needed. This, however, is out of the scope of this
 project.
+
+## How do I use it?
+
+Install it via pip like this:
+
+```
+pip install mendel-development-tool
+```
+
+Note that if you run this as a non-root user, the executable will be stored in
+`$HOME/.local/bin` which may not be in your PATH environment variable, so you'll
+want to add it.
