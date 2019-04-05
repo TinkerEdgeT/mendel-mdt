@@ -38,6 +38,12 @@ KEYSDIR = os.path.join(config.CONFIG_BASEDIR, "keys")
 KEYFILE_PATH = os.path.join(config.CONFIG_BASEDIR, "keys", "mdt.key")
 
 
+def GenerateAuthorizedKeysLine(paramiko_key):
+    public_key = paramiko_key.get_base64()
+    authorized_keys_line = 'ssh-rsa {0} mdt'.format(public_key)
+    return authorized_keys_line
+
+
 class Keystore:
     def __init__(self):
         if not os.path.exists(config.CONFIG_BASEDIR):

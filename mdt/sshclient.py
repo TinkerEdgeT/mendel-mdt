@@ -79,11 +79,6 @@ class SshClient:
         finally:
             self.client.close()
 
-    def _generateAuthorizedKeysLine(self):
-        public_key = self.keystore.key().get_base64()
-        authorized_keys_line = 'ssh-rsa {0} mdt'.format(public_key)
-        return authorized_keys_line
-
     def _pushKeyViaKeymaster(self):
         if not self.address:
             raise discoverer.DeviceNotFoundError()
@@ -93,7 +88,7 @@ class SshClient:
 
         connection = http.client.HTTPConnection(self.address, KEYMASTER_PORT)
         try:
-            key_line = self._generateAuthorizedKeysLine()
+            key_line = keys.GenerateAuthorizedKeysLine(self.keystore.key())
             connection.request('PUT', '/', key_line + '\r\n')
             response = connection.getresponse()
         except ConnectionRefusedError as e:
@@ -102,10 +97,15 @@ class SshClient:
             print()
             print("Did you previously connect from a different machine? If so,\n"
                   "mdt-keymaster will not be running as it only accepts a single key.\n")
-            print("You will need to either remove the key from ~/.ssh/authorized_keys\n"
-                  "via some other method (serial console, etc), or you will need to\n"
-                  "connect from the other machine to push an SSH public key to the\n"
-                  "authorized_keys file.")
+            print("You will need to either:\n"
+                  "   1) Remove the key from /home/mendel/.ssh/authorized_keys on the\n"
+                  "      device via the serial console and then restart mdt-keymaster\n"
+                  "      by running 'sudo systemctl restart mdt-keymaster'\n"
+                  "\n- or -\n\n"
+                  "   2) Copy the mdt private key from your home directory on this host\n"
+                  "      in ~/.config/mdt/keys/mdt.key to the first machine and use\n"
+                  "      'mdt pushkey mdt.key' to add that key to the device's\n"
+                  "      authorized_keys file.")
             print()
             raise KeyPushError(e)
         except ConnectionError as e:

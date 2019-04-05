@@ -126,8 +126,9 @@ class PushKeyCommand(command.NetworkCommand):
     '''Usage: mdt pushkey [<path-to-ssh-public-key>]
 
 Copies an SSH public key provided to the device's ~/.ssh/authorized_keys
-file. If no public key is provided, attempts to push MDTs previously generated
-public key from ~/.config/mdt/keys/mdt.key.
+file. If an MDT private key is provided, will push the public half of that key
+to the device's authorized_keys file. If no public key is provided, attempts to
+push MDTs previously generated public key from ~/.config/mdt/keys/mdt.key.
 '''
 
     def _pushMdtKey(self, client):
@@ -153,6 +154,12 @@ public key from ~/.config/mdt/keys/mdt.key.
             sftp.mkdir('/home/mendel/.ssh', mode=0o700)
 
         with sftp.open('/home/mendel/.ssh/authorized_keys', 'a+b') as fp:
+            # Paramiko RSA private key -- get the public part by converting
+            if source_key.startswith('-----BEGIN RSA PRIVATE KEY-----'):
+                keyfp = io.StringIO(source_key)
+                pkey = RSAKey.from_private_key_file(keyfp)
+                source_key = keys.GenerateAuthorizedKeysLine(pkey)
+
             fp.write('\r\n')
             fp.write(source_key)
 
