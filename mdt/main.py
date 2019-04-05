@@ -103,12 +103,16 @@ of subcommands available.
             return 1
 
         subcommand = args[1].lower()
-        command = COMMANDS[subcommand]
-        if command.__doc__:
-            print(command.__doc__)
+
+        if subcommand in COMMANDS:
+            command = COMMANDS[subcommand]
+            if command.__doc__:
+                print(command.__doc__)
+            else:
+                print("No help is available for subcommand '{0}' "
+                      "-- please yell at the developers. :)".format(subcommand))
         else:
-            print("No help is available for subcommand '{0}' "
-                  "-- please yell at the developers. :)".format(subcommand))
+            print("Unknown subcommand '{0}' -- try 'mdt help' for a list".format(subcommand))
 
 
 class VersionCommand:
