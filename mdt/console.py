@@ -53,7 +53,7 @@ class PosixConsole:
         self.channel = channel
         self.inputfile = inputfile
         self.has_tty = False
-        self.uname = os.uname()
+        self.uname = os.uname().sysname
 
     def _updateWindowSize(self, signum, stackFrame):
         if self.has_tty:
@@ -70,7 +70,7 @@ class PosixConsole:
         sock = self.channel.get_transport().sock
 
         # Only Linux doesn't support SO_NWRITE, which has been available since 4.3 BSD. O.o
-        if uname == "Linux":
+        if self.uname == "Linux":
             return struct.unpack("I", fcntl.ioctl(sock.fileno(), SIOCOUTQ, '\0\0\0\0'))[0]
 
         return sock.getsockopt(socket.SOL_SOCKET, SO_NWRITE)
