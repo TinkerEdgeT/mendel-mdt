@@ -1,3 +1,15 @@
+mendel-development-tool (1.1-1) stable; urgency=medium
+
+  * help: Make help verify the subcommand is actually a real subcommand
+  * console: Fix a bug with a missing self
+  * console: Update socket timeout functionality for Macs
+  * HACK: Workaround weird paramiko socket behaviour
+  * readme: Add in a note about how to install and use from pip
+  * pushkey: Fix argument names
+  * discoverer: Check to make sure info is real before using
+
+ -- June Tate-Gans <jtgans@google.com>  Mon, 08 Apr 2019 16:01:41 -0700
+
 mendel-development-tool (1.0-1) stable; urgency=medium
 
   * Reworked how mDNS discoveries are done.
