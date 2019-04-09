@@ -113,10 +113,33 @@ keys.
 
     def run(self, args):
         if os.path.exists(KEYFILE_PATH):
+            print('WARNING!')
+            print()
+            print('MDT has detected a key already on disk. This command')
+            print('will overwrite that key! This will effectively lock you out from')
+            print('any boards that you may have previously used this key with!')
+            print()
+            print('If you are attempting to rotate your keys, you will need to run')
+            print("'mdt resetkeys' on each board you've previously used to remove")
+            print('your old key first, otherwise you will be locked out from SSH')
+            print('access and will have to push your key manually.')
+            print()
+            print("If you know what you're doing, you can proceed by typing 'YES'")
+            sys.stdout.write('here: ')
+            sys.stdout.flush()
+
+            response = sys.stdin.readline()
+            if not response.startswith('YES'):
+                print('Aborting.')
+                return 1
+
+            print('Proceeding.')
             os.unlink(KEYFILE_PATH)
+
         keystore = Keystore()
         if not keystore.generateKey():
             return 1
+
         return 0
 
 
