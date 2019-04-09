@@ -99,8 +99,7 @@ class SshClient:
                   "mdt-keymaster will not be running as it only accepts a single key.\n")
             print("You will need to either:\n"
                   "   1) Remove the key from /home/mendel/.ssh/authorized_keys on the\n"
-                  "      device via the serial console and then restart mdt-keymaster\n"
-                  "      by running 'sudo systemctl restart mdt-keymaster'\n"
+                  "      device via the serial console\n"
                   "\n- or -\n\n"
                   "   2) Copy the mdt private key from your home directory on this host\n"
                   "      in ~/.config/mdt/keys/mdt.key to the first machine and use\n"
