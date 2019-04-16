@@ -15,9 +15,12 @@ limitations under the License.
 '''
 
 
+import io
 import re
 import os
 import sys
+
+from paramiko.rsakey import RSAKey
 
 from mdt import command
 from mdt import console
@@ -145,8 +148,13 @@ push MDTs previously generated public key from ~/.config/mdt/keys/mdt.key.
             return 1
 
         source_key = ''
-        with open(keyfile, 'rb') as fp:
-            source_key = fp.read()
+        with open(keyfile, 'r') as fp:
+            source_key = fp.readline()
+
+        # Paramiko RSA private key -- get the public part by converting
+        if source_key.startswith('-----BEGIN RSA PRIVATE KEY-----'):
+            pkey = RSAKey.from_private_key_file(keyfile)
+            source_key = keys.GenerateAuthorizedKeysLine(pkey)
 
         try:
             sftp.chdir('/home/mendel/.ssh')
@@ -154,13 +162,6 @@ push MDTs previously generated public key from ~/.config/mdt/keys/mdt.key.
             sftp.mkdir('/home/mendel/.ssh', mode=0o700)
 
         with sftp.open('/home/mendel/.ssh/authorized_keys', 'a+b') as fp:
-            # Paramiko RSA private key -- get the public part by converting
-            if source_key.startswith('-----BEGIN RSA PRIVATE KEY-----'):
-                keyfp = io.StringIO(source_key)
-                pkey = RSAKey.from_private_key_file(keyfp)
-                source_key = keys.GenerateAuthorizedKeysLine(pkey)
-
-            fp.write('\r\n')
             fp.write(source_key)
 
         print("Key {0} pushed.".format(keyfile))
