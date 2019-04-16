@@ -38,6 +38,12 @@ class Config:
         if not os.path.exists(CONFIG_ATTRDIR):
             os.makedirs(CONFIG_ATTRDIR, mode=0o700)
 
+    def getAllAttributes(self):
+        vars = {}
+        for name in os.listdir(CONFIG_ATTRDIR):
+            vars[name] = self.getAttribute(name)
+        return vars
+
     def getAttribute(self, name, default=None):
         path = os.path.join(CONFIG_ATTRDIR, name)
         if os.path.exists(path):
@@ -116,7 +122,14 @@ known stored variables and their values. Note: default values are not printed.
                 print("{0} is {1}".format(args[1],
                                     self.config.getAttribute(args[1])))
         else:
-            print("Usage: mdt get [<variablename>]")
+            vars = self.config.getAllAttributes()
+            if not vars:
+                print("No variables are set.")
+                return True
+
+            for name, value in vars.items():
+                print("{0} is {1}".format(name, value))
+            return True
 
 
 class SetCommand:
