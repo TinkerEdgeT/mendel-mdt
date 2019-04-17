@@ -1,3 +1,12 @@
+mendel-development-tool (1.2-1) stable; urgency=medium
+
+  * sshclient: Update the error message when a key push fails
+  * genkey: Add a warning and confirmation prompt
+  * get: Make get actually dump all the variables like the docs say
+  * pushkey: Fix comparisions for private keys
+
+ -- June Tate-Gans <jtgans@google.com>  Wed, 17 Apr 2019 09:48:46 -0700
+
 mendel-development-tool (1.1-1) stable; urgency=medium
 
   * help: Make help verify the subcommand is actually a real subcommand
