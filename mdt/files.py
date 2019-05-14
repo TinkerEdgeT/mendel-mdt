@@ -97,7 +97,21 @@ dependencies.
 
 
 class PushCommand(command.NetworkCommand):
-    '''Usage: mdt push <filename...> <remote-path>
+    '''Usage: mdt push <local-path...> [<remote-path>]
+
+If a directory name is provided as a local path, a directory will be created on
+the device and the contents of that directory will be copied in place,
+recursively.
+
+If remote-path is omitted, push assumes you mean to push files to /home/mendel
+instead.
+
+Note that the last argument is considered to be the remote path to push to!
+
+If remote-path is a path that exists locally, it will be considered to be a
+local-path instead, and push will default to pushing to /home/mendel instead.
+This can lead to surprising results, so check if your last argument exists or
+not.
 
 Variables used:
     preferred-device    - set this to your preferred device name to connect
@@ -110,37 +124,57 @@ Variables used:
                           device with. Defaults to 'mendel'. Only used
                           during the initial setup phase of pushing an SSH
                           key to the board.
-
-Pushes (copies) a local file or set of files to the remote device.
 '''
 
-    def preConnectRun(self, args):
-        if len(args) < 3:
-            print("Usage: mdt push <filename...> <remote-path>")
-            return False
+    def pushDir(self, sftp, dir, destination):
+        basename = os.path.basename(dir)
+        destination = os.path.join(destination, basename)
+        sftp.mkdir(destination)
 
-        for file in args[1:-1]:
-            if not os.path.isfile(file):
-                print("{0}: Is a directory -- cannot push".format(file))
-                return False
+        for path, subdirs, files in os.walk(dir):
+            relpath = os.path.relpath(path, start=dir)
+            remote_path = os.path.join(destination, relpath)
 
-        return True
+            for name in subdirs:
+                sftp.mkdir(os.path.join(remote_path, name))
+
+            for name in files:
+                self.pushFile(sftp,
+                              os.path.join(path, name),
+                              remote_path)
+
+    def pushFile(self, sftp, file, destination):
+        base_filename = os.path.basename(file)
+        remote_path = os.path.join(destination, base_filename)
+
+        sftp_callback = MakeProgressFunc(file, PROGRESS_WIDTH)
+        sftp_callback(0, 1)
+        sftp.put(file, remote_path, callback=sftp_callback)
+        sftp_callback(1, 1)
+
+        print()
 
     def runWithClient(self, client, args):
-        files_to_push = args[1:-1]
-        destination = args[-1]
+        # If the last argument (remote-path) exists, assume it is a file to push
+        # and the remote-path should be /home/mendel
+        if os.path.exists(args[-1]):
+            files_to_push = args[1:]
+            destination = '/home/mendel'
+        else:
+            files_to_push = args[1:-1]
+            destination = args[-1]
 
+        sftp = client.openSftp()
         try:
-            sftp = client.openSftp()
             for file in files_to_push:
-                base_filename = os.path.basename(file)
-                sftp_callback = MakeProgressFunc(file, PROGRESS_WIDTH)
-                remote_filename = os.path.join(destination, base_filename)
-
-                sftp_callback(0, 1)
-                sftp.put(file, remote_filename, callback=sftp_callback)
-                sftp_callback(1, 1)
-                print()
+                file = os.path.normpath(file)
+                if os.path.isdir(file):
+                    self.pushDir(sftp, file, destination)
+                else:
+                    self.pushFile(sftp, file, destination)
+        except IOError as e:
+            print("Couldn't upload file to device: {0}".format(e))
+            return 1
         finally:
             print()
             sftp.close()
