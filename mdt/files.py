@@ -126,17 +126,48 @@ Variables used:
                           key to the board.
 '''
 
+    def preConnectRun(self, args):
+        if len(args) < 2:
+            print('Usage: mdt push <local-path...> [<remote-path>]')
+            return False
+
+        # If the last argument (remote-path) exists, assume it is a file to push
+        # and the remote-path should be /home/mendel
+        if os.path.exists(args[-1]):
+            self.files_to_push = args[1:]
+            self.destination = '/home/mendel'
+        elif len(args) == 2:
+            # Catch the case where the only argument given doesn't exist.
+            print('{0}: No such file or directory'.format(args[1]))
+            return False
+        else:
+            self.files_to_push = args[1:-1]
+            self.destination = args[-1]
+
+        # Convert relative paths into absolute ones for Paramiko
+        if self.destination[0] != '/':
+            self.destination = '/home/mendel/' + self.destination
+
+        return True
+
+    def maybeMkdir(self, sftp, dirname):
+        try:
+            sftp.stat(dirname)
+        except IOError as e:
+            sftp.mkdir(dirname)
+
     def pushDir(self, sftp, dir, destination):
         basename = os.path.basename(dir)
-        destination = os.path.join(destination, basename)
-        sftp.mkdir(destination)
+        destination = os.path.normpath(os.path.join(destination, basename))
+        self.maybeMkdir(sftp, destination)
 
         for path, subdirs, files in os.walk(dir):
             relpath = os.path.relpath(path, start=dir)
             remote_path = os.path.join(destination, relpath)
 
             for name in subdirs:
-                sftp.mkdir(os.path.join(remote_path, name))
+                remote_name = os.path.join(remote_path, name)
+                self.maybeMkdir(sftp, remote_name)
 
             for name in files:
                 self.pushFile(sftp,
@@ -144,6 +175,9 @@ Variables used:
                               remote_path)
 
     def pushFile(self, sftp, file, destination):
+        destination = os.path.normpath(destination)
+        self.maybeMkdir(sftp, destination)
+
         base_filename = os.path.basename(file)
         remote_path = os.path.join(destination, base_filename)
 
@@ -155,28 +189,19 @@ Variables used:
         print()
 
     def runWithClient(self, client, args):
-        # If the last argument (remote-path) exists, assume it is a file to push
-        # and the remote-path should be /home/mendel
-        if os.path.exists(args[-1]):
-            files_to_push = args[1:]
-            destination = '/home/mendel'
-        else:
-            files_to_push = args[1:-1]
-            destination = args[-1]
-
         sftp = client.openSftp()
+
         try:
-            for file in files_to_push:
+            for file in self.files_to_push:
                 file = os.path.normpath(file)
                 if os.path.isdir(file):
-                    self.pushDir(sftp, file, destination)
+                    self.pushDir(sftp, file, self.destination)
                 else:
-                    self.pushFile(sftp, file, destination)
+                    self.pushFile(sftp, file, self.destination)
         except IOError as e:
             print("Couldn't upload file to device: {0}".format(e))
             return 1
         finally:
-            print()
             sftp.close()
 
         return 0
