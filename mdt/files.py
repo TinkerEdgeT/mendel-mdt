@@ -19,6 +19,8 @@ import os
 import sys
 import time
 
+from stat import S_ISDIR
+
 from mdt import command
 from mdt import config
 from mdt import console
@@ -232,6 +234,53 @@ Pulls (copies) a set of files from the remote device to a local path.
 
         return True
 
+    def sftpWalk(self, sftp, remote_dir):
+        dirs_to_walk = [remote_dir]
+        for dir in dirs_to_walk:
+            entries = sftp.listdir_attr(dir)
+            dirs = []
+            files = []
+
+            for entry in entries:
+                if S_ISDIR(entry.st_mode):
+                    dirs.append(entry.filename)
+                    dirs_to_walk.append(dir + '/' + entry.filename)
+                else:
+                    files.append(entry.filename)
+
+            yield (dir, dirs, files)
+
+    def maybeMkdir(self, dir):
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+
+    def pullDir(self, sftp, remote_dir, destination):
+        basename = os.path.basename(remote_dir)
+        destination = os.path.normpath(os.path.join(destination, basename))
+        self.maybeMkdir(destination)
+
+        for path, subdirs, files in self.sftpWalk(sftp, remote_dir):
+            relpath = os.path.relpath(path, start=remote_dir)
+            local_path = os.path.join(destination, relpath)
+
+            for name in subdirs:
+                local_name = os.path.join(local_path, name)
+                self.maybeMkdir(local_name)
+
+            for name in files:
+                self.pullFile(sftp, path + '/' + name, local_path)
+
+    def pullFile(self, sftp, remote_file, destination):
+        base_filename = os.path.basename(remote_file)
+        destination_filename = os.path.join(destination, base_filename)
+
+        sftp_callback = MakeProgressFunc(remote_file, PROGRESS_WIDTH, char='<')
+        sftp_callback(0, 1)
+        sftp.get(remote_file, destination_filename, callback=sftp_callback)
+        sftp_callback(1, 1)
+
+        print()
+
     def runWithClient(self, client, args):
         files_to_pull = args[1:-1]
         destination = args[-1]
@@ -239,18 +288,16 @@ Pulls (copies) a set of files from the remote device to a local path.
         try:
             sftp = client.openSftp()
             for file in files_to_pull:
-                base_filename = os.path.basename(file)
-                sftp_callback = MakeProgressFunc(file,
-                                                 PROGRESS_WIDTH,
-                                                 char='<')
-                destination_filename = os.path.join(destination, base_filename)
+                stat_result = sftp.stat(file)
 
-                sftp_callback(0, 1)
-                sftp.get(file, destination_filename, callback=sftp_callback)
-                sftp_callback(1, 1)
-                print()
+                if S_ISDIR(stat_result.st_mode):
+                    self.pullDir(sftp, file, destination)
+                else:
+                    self.pullFile(sftp, file, destination)
+        except IOError as e:
+            print("Couldn't download file from device: {0}".format(e))
+            return 1
         finally:
-            print()
             sftp.close()
 
         return 0
