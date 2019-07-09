@@ -28,6 +28,7 @@ TYPE_KEYBOARD_INPUT = 0
 TYPE_TERMINAL_OUTPUT = 1
 TYPE_REMOTE_CLOSED = 2
 TYPE_SOCKET_TIMEOUT = 3
+TYPE_EXIT_CODE = 4
 KEEP_ALIVE_SECONDS = 10
 
 
@@ -37,6 +38,10 @@ class ConnectionClosedError(Exception):
 
 
 class SocketTimeoutError(Exception):
+    pass
+
+
+class UnknownEventTypeError(Exception):
     pass
 
 
@@ -182,9 +187,11 @@ class KeyboardInputThread(threading.Thread):
         self.queue = queue
 
     def run(self):
+        import msvcrt
+
         while True:
-            ch = sys.stdin.read(1)
-            self.queue.put((KEYBOARD_INPUT_DATA, ch))
+            ch = msvcrt.getch()
+            self.queue.put((TYPE_KEYBOARD_INPUT, ch))
 
 
 class TerminalOutputThread(threading.Thread):
@@ -228,7 +235,7 @@ class WindowsConsole:
         escape_level = 0
 
         while True:
-            dataType, data = self.queue.get()
+            dataType, data = self.dataQueue.get()
 
             if dataType == TYPE_KEYBOARD_INPUT:
                 if escape_level == 0 and data == b'\r':
@@ -241,14 +248,16 @@ class WindowsConsole:
                 else:
                     escape_level = 0
 
-                channel.send(data)
-            if dataType == TYPE_TERMINAL_OUTPUT:
+                self.channel.send(data.decode("utf-8", errors="ignore"))
+            elif dataType == TYPE_TERMINAL_OUTPUT:
                 sys.stdout.write(data)
                 sys.stdout.flush()
-            if dataType == TYPE_REMOTE_CLOSED:
+            elif dataType == TYPE_REMOTE_CLOSED:
                 raise ConnectionClosedError(exit_code=data)
-            if dataType == TYPE_SOCKET_TIMEOUT:
+            elif dataType == TYPE_SOCKET_TIMEOUT:
                 raise SocketTimeoutError()
+            else:
+                raise UnknownEventTypeError()
 
 
 class Console:
