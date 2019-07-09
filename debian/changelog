@@ -1,3 +1,9 @@
+mendel-development-tool (1.4.1-1) stable; urgency=medium
+
+  * sshclient: Default to the dumb TERM type
+
+ -- June Tate-Gans <jtgans@google.com>  Tue, 09 Jul 2019 14:26:00 -0700
+
 mendel-development-tool (1.4-1) stable; urgency=medium
 
   * windows: Fix coding errors in the windows console

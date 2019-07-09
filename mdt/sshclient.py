@@ -178,7 +178,7 @@ class SshClient:
         return environment
 
     def openShell(self):
-        term = os.getenv("TERM", default="vt100")
+        term = os.getenv("TERM", default="dumb")
         env = self._generateEnvironment()
         width, height = os.get_terminal_size()
 
