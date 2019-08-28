@@ -83,7 +83,7 @@ class SshClient:
         if not self.address:
             raise discoverer.DeviceNotFoundError()
 
-        if not self.address.startswith('192.168.100'):
+        if not self.address.startswith('192.168.10'):
             raise NonLocalDeviceError()
 
         connection = http.client.HTTPConnection(self.address, KEYMASTER_PORT)
