@@ -1,3 +1,11 @@
+mendel-development-tool (1.5.0) stable; urgency=medium
+
+  * Allow mdt to connect to device matching 192.168.10X.XXX.
+  * sshclient: Use the dumb terminal definition by default
+  * Bump version to 1.5.0 for next release
+
+ -- Coral <coral-support@google.com>  Thu, 17 Oct 2019 13:46:08 -0500
+
 mendel-development-tool (1.4.1-1) stable; urgency=medium
 
   * sshclient: Default to the dumb TERM type
