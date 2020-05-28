@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='mendel-development-tool',
-    version='1.5.0',
+    version='1.5.1',
     description='A command-line tool to manage Mendel Linux embedded systems',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -32,7 +32,7 @@ setup(
     packages=find_packages(),
     python_requires='>=3.5.0',
     install_requires=[
-        'zeroconf>=0.19.1',
+        'zeroconf>=0.27.0',
         'paramiko>=2.0.0'
     ],
     data_files=[('share/man/man1', ['man/mdt.1'])],

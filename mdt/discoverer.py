@@ -57,7 +57,7 @@ class Discoverer:
 
         if info:
             hostname = info.server.split('.')[0]
-            address = socket.inet_ntoa(cast(bytes, info.address))
+            address = info.parsed_addresses()[0]
 
             # Prevent duplicate announcements from extending the discovery delay
             if hostname not in self.discoveries:
