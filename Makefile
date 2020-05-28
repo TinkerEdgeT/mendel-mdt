@@ -4,7 +4,7 @@ deb:
 	dpkg-buildpackage -tc --no-sign
 
 wheel:
-	python3 setup.py sdist bdist
+	python3 setup.py sdist bdist_wheel
 
 upload: wheel
 	python3 -m twine upload dist/*
