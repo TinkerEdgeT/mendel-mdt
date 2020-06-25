@@ -79,3 +79,7 @@ class Discoverer:
             if info.server in self.discoveries:
                 self._heard_announcement = True
                 del(self.discoveries[info.server])
+
+    def update_service(self, zeroconf, type, name):
+        """TODO(jtgans): Add this method once zeroconf figures out what it's for."""
+        pass

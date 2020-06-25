@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='mendel-development-tool',
-    version='1.5.1',
+    version='1.5.2',
     description='A command-line tool to manage Mendel Linux embedded systems',
     long_description=long_description,
     long_description_content_type='text/markdown',
